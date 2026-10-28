@@ -4,33 +4,33 @@
 
 :root,
 [data-theme="terminal-emerald"] {
-  --term-bg: #000000;
-  --term-surface: #070907;
-  --term-elevated: #0e130e;
-  --term-hover: #141c14;
-  --term-border: #162416;
-  --term-border-strong: #224222;
-  --term-text: #e2e8f0;
-  --term-text-muted: #8b9bb4;
-  --term-text-dim: #526052;
+  --term-bg: #030706;
+  --term-surface: #07130e;
+  --term-elevated: #0d1e17;
+  --term-hover: #132a21;
+  --term-border: #122a20;
+  --term-border-strong: #1b3d2f;
+  --term-text: #f0fdf4;
+  --term-text-muted: #94a3b8;
+  --term-text-dim: #526b60;
   --term-accent: #22c55e;
-  --term-accent-dim: rgba(34, 197, 94, 0.12);
+  --term-accent-dim: rgba(34, 197, 94, 0.14);
   --term-accent-glow: rgba(34, 197, 94, 0.35);
   --term-cyan: #06b6d4;
-  --term-amber: #eab308;
-  --term-red: #ef4444;
+  --term-amber: #f59e0b;
+  --term-red: #f43f5e;
   --term-purple: #a855f7;
 }
 
 [data-theme="matrix-green"] {
-  --term-bg: #000000;
-  --term-surface: #040804;
-  --term-elevated: #091209;
-  --term-hover: #102010;
-  --term-border: #0f2e0f;
-  --term-border-strong: #1b521b;
-  --term-text: #e0fae0;
-  --term-text-muted: #7ec27e;
+  --term-bg: #010402;
+  --term-surface: #040d06;
+  --term-elevated: #08170b;
+  --term-hover: #0e2413;
+  --term-border: #0e2a14;
+  --term-border-strong: #164220;
+  --term-text: #e2fbe2;
+  --term-text-muted: #85c985;
   --term-text-dim: #386b38;
   --term-accent: #00ff66;
   --term-accent-dim: rgba(0, 255, 102, 0.14);
@@ -42,12 +42,12 @@
 }
 
 [data-theme="dracula"] {
-  --term-bg: #0c0d14;
-  --term-surface: #141520;
-  --term-elevated: #1a1c2b;
-  --term-hover: #23263b;
-  --term-border: #282a3e;
-  --term-border-strong: #44476a;
+  --term-bg: #090a10;
+  --term-surface: #11121d;
+  --term-elevated: #181a29;
+  --term-hover: #222538;
+  --term-border: #262940;
+  --term-border-strong: #3b3f61;
   --term-text: #f8f8f2;
   --term-text-muted: #b5b5c9;
   --term-text-dim: #6272a4;
@@ -61,12 +61,12 @@
 }
 
 [data-theme="nord"] {
-  --term-bg: #0e1117;
-  --term-surface: #161b22;
-  --term-elevated: #1f242c;
-  --term-hover: #29303b;
-  --term-border: #2e3440;
-  --term-border-strong: #434c5e;
+  --term-bg: #0b0e14;
+  --term-surface: #121720;
+  --term-elevated: #1a202c;
+  --term-hover: #242d3d;
+  --term-border: #293345;
+  --term-border-strong: #3d4a63;
   --term-text: #eceff4;
   --term-text-muted: #d8dee9;
   --term-text-dim: #616e88;
@@ -80,12 +80,12 @@
 }
 
 [data-theme="amber-crt"] {
-  --term-bg: #000000;
-  --term-surface: #0a0700;
-  --term-elevated: #140e00;
-  --term-hover: #221700;
-  --term-border: #332200;
-  --term-border-strong: #553900;
+  --term-bg: #080500;
+  --term-surface: #100b00;
+  --term-elevated: #1a1200;
+  --term-hover: #261b00;
+  --term-border: #332400;
+  --term-border-strong: #543b00;
   --term-text: #fff3d1;
   --term-text-muted: #d4a94a;
   --term-text-dim: #7a5818;
@@ -98,24 +98,23 @@
   --term-purple: #ff70a6;
 }
 
-/* Base resets & compact monospace typography */
+/* Base resets & typography */
 html {
-  font-size: 13px; /* Compact terminal font size */
+  font-size: 13.5px;
 }
 
 body {
   background-color: var(--term-bg);
   color: var(--term-text);
   font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Monaco, Consolas, monospace;
-  letter-spacing: -0.015em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom terminal scrollbars */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -124,35 +123,30 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--term-border);
-  border-radius: 1px;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--term-border-strong);
 }
 
-/* Terminal card & box utility styles */
+/* Card utility styles */
 .terminal-card {
   background-color: var(--term-surface);
   border: 1px solid var(--term-border);
-  transition: border-color 0.12s ease;
+  border-radius: 0.85rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .terminal-card:hover {
   border-color: var(--term-border-strong);
 }
 
-.terminal-box {
-  background-color: var(--term-surface);
-  border: 1px solid var(--term-border);
-  border-radius: 4px;
-}
-
-/* CRT scanlines */
+/* CRT scanlines effect */
 .crt-overlay {
   background: linear-gradient(
     rgba(18, 16, 16, 0) 50%, 
-    rgba(0, 0, 0, 0.22) 50%
+    rgba(0, 0, 0, 0.18) 50%
   );
   background-size: 100% 2px;
   pointer-events: none;

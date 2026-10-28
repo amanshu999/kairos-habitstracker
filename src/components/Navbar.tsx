@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Volume2, 
-  VolumeX, 
-  Tv, 
+  Sprout,
+  Check, 
+  Workflow, 
+  BarChart2, 
+  Calendar as CalendarIcon, 
+  Settings as SettingsIcon, 
   HelpCircle, 
-  Command, 
-  Cloud, 
-  CloudOff, 
-  Settings as SettingsIcon 
+  Sun,
+  Moon,
+  ChevronDown,
+  Command,
+  Cloud,
+  CloudOff
 } from 'lucide-react';
 import { ThemeType, UserSettings } from '../types';
 import { isSupabaseConfigured } from '../lib/supabase';
@@ -51,7 +56,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   const themes: { id: ThemeType; label: string; dotColor: string }[] = [
-    { id: 'terminal-emerald', label: 'Terminal', dotColor: '#22c55e' },
+    { id: 'terminal-emerald', label: 'Emerald', dotColor: '#22c55e' },
     { id: 'matrix-green', label: 'Matrix', dotColor: '#00ff66' },
     { id: 'dracula', label: 'Dracula', dotColor: '#bd93f9' },
     { id: 'nord', label: 'Nord', dotColor: '#88c0d0' },
@@ -64,98 +69,127 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const hasCloud = isSupabaseConfigured();
+  const currentTheme = themes.find(t => t.id === settings.theme) || themes[0];
 
   return (
-    <header className="border-b border-term-border bg-black/90 backdrop-blur sticky top-0 z-40 px-3 sm:px-6 py-2">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 text-xs font-mono">
-        {/* Left: Brand and Navigation */}
-        <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
-          {/* Logo */}
-          <div 
-            onClick={() => handleTabClick('dashboard')}
-            className="flex items-center gap-1.5 cursor-pointer select-none text-term-text font-bold"
-          >
-            <span className="text-term-accent font-bold">[k]</span>
-            <span>kairos</span>
-            <span className="text-[10px] text-term-text-dim px-1 py-0.2 rounded border border-term-border ml-1">
-              [beta]
-            </span>
+    <header className="border-b border-term-border bg-term-bg/95 backdrop-blur sticky top-0 z-40 px-4 sm:px-6 py-2.5 font-mono select-none">
+      <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-4 text-xs">
+        {/* Brand: Sprout icon + kairos + beta */}
+        <div 
+          onClick={() => handleTabClick('dashboard')}
+          className="flex items-center gap-2 cursor-pointer group shrink-0"
+        >
+          <div className="text-term-accent transition-transform group-hover:scale-110">
+            <Sprout size={20} strokeWidth={2.5} />
           </div>
-
-          {/* Links */}
-          <nav className="flex items-center gap-2 sm:gap-3 text-term-text-dim overflow-x-auto scrollbar-none">
-            <button
-              onClick={() => handleTabClick('dashboard')}
-              className={`hover:text-term-text transition-colors ${
-                activeTab === 'dashboard' ? 'text-term-accent font-bold' : ''
-              }`}
-            >
-              habits
-            </button>
-            <span>·</span>
-            <button
-              onClick={() => handleTabClick('routines')}
-              className={`hover:text-term-text transition-colors ${
-                activeTab === 'routines' ? 'text-term-accent font-bold' : ''
-              }`}
-            >
-              routines
-            </button>
-            <span>·</span>
-            <button
-              onClick={() => handleTabClick('analytics')}
-              className={`hover:text-term-text transition-colors ${
-                activeTab === 'analytics' ? 'text-term-accent font-bold' : ''
-              }`}
-            >
-              stats
-            </button>
-            <span>·</span>
-            <button
-              onClick={() => handleTabClick('calendar')}
-              className={`hover:text-term-text transition-colors ${
-                activeTab === 'calendar' ? 'text-term-accent font-bold' : ''
-              }`}
-            >
-              calendar
-            </button>
-            <span>·</span>
-            <button
-              onClick={onOpenSettings}
-              className="hover:text-term-text transition-colors"
-            >
-              system
-            </button>
-            <span>·</span>
-            <button
-              onClick={onOpenShortcuts}
-              className="hover:text-term-text transition-colors"
-            >
-              help
-            </button>
-          </nav>
+          <span className="font-bold text-base tracking-tight text-term-text">
+            kairos
+          </span>
+          <span className="text-[10px] text-term-accent font-medium px-2 py-0.5 rounded-full border border-term-accent/30 bg-term-accent/10">
+            beta
+          </span>
         </div>
 
-        {/* Right Tools */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Center Pill Navigation */}
+        <nav className="hidden lg:flex items-center gap-1.5 p-1 rounded-full bg-term-surface border border-term-border">
+          <button
+            onClick={() => handleTabClick('dashboard')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all text-xs font-medium ${
+              activeTab === 'dashboard'
+                ? 'bg-term-elevated text-term-accent font-semibold border border-term-border-strong shadow-sm'
+                : 'text-term-text-muted hover:text-term-text'
+            }`}
+          >
+            <Check size={13} strokeWidth={3} className={activeTab === 'dashboard' ? 'text-term-accent' : 'opacity-0'} />
+            <span>Habits</span>
+          </button>
+
+          <button
+            onClick={() => handleTabClick('routines')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all text-xs font-medium ${
+              activeTab === 'routines'
+                ? 'bg-term-elevated text-term-accent font-semibold border border-term-border-strong shadow-sm'
+                : 'text-term-text-muted hover:text-term-text'
+            }`}
+          >
+            <Workflow size={13} />
+            <span>Routines</span>
+          </button>
+
+          <button
+            onClick={() => handleTabClick('analytics')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all text-xs font-medium ${
+              activeTab === 'analytics'
+                ? 'bg-term-elevated text-term-accent font-semibold border border-term-border-strong shadow-sm'
+                : 'text-term-text-muted hover:text-term-text'
+            }`}
+          >
+            <BarChart2 size={13} />
+            <span>Stats</span>
+          </button>
+
+          <button
+            onClick={() => handleTabClick('calendar')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all text-xs font-medium ${
+              activeTab === 'calendar'
+                ? 'bg-term-elevated text-term-accent font-semibold border border-term-border-strong shadow-sm'
+                : 'text-term-text-muted hover:text-term-text'
+            }`}
+          >
+            <CalendarIcon size={13} />
+            <span>Calendar</span>
+          </button>
+
+          <button
+            onClick={onOpenSettings}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-term-text-muted hover:text-term-text transition-colors"
+          >
+            <SettingsIcon size={13} />
+            <span>System</span>
+          </button>
+
+          <button
+            onClick={onOpenShortcuts}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-term-text-muted hover:text-term-text transition-colors"
+          >
+            <HelpCircle size={13} />
+            <span>Help</span>
+          </button>
+        </nav>
+
+        {/* Right Tools: Time, Sun/Theme, Emerald Dropdown */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           {/* Clock */}
-          <span className="text-term-text-dim text-[11px] hidden sm:inline">
+          <span className="text-term-text-muted text-xs font-mono font-medium">
             {timeStr}
           </span>
 
-          {/* Theme dropdown */}
+          {/* Sun / Theme icon */}
+          <button
+            onClick={() => {
+              const nextIndex = (themes.findIndex(t => t.id === settings.theme) + 1) % themes.length;
+              onUpdateSettings({ theme: themes[nextIndex].id });
+              playSound.click(settings.sound_effects);
+            }}
+            className="p-1 rounded-full text-term-text-muted hover:text-term-accent transition-colors"
+            title="Cycle theme"
+          >
+            <Sun size={15} />
+          </button>
+
+          {/* Theme Dropdown Pill */}
           <div className="relative group">
             <button 
-              className="flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded border border-term-border text-term-text-dim hover:text-term-text hover:border-term-border-strong"
-              title="Theme"
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-term-surface border border-term-border hover:border-term-border-strong text-term-text font-medium"
             >
               <span 
                 className="w-2 h-2 rounded-full inline-block" 
-                style={{ backgroundColor: themes.find(t => t.id === settings.theme)?.dotColor || '#22c55e' }} 
+                style={{ backgroundColor: currentTheme.dotColor }} 
               />
-              <span className="capitalize">{settings.theme.replace('terminal-', '').replace('-crt', '').replace('-green', '')}</span>
+              <span>{currentTheme.label}</span>
+              <ChevronDown size={12} className="text-term-text-dim" />
             </button>
-            <div className="absolute right-0 top-full mt-1 hidden group-hover:flex flex-col bg-black border border-term-border-strong rounded py-1 w-32 z-50 animate-slide-down">
+            <div className="absolute right-0 top-full mt-1.5 hidden group-hover:flex flex-col bg-term-surface border border-term-border-strong rounded-xl py-1 w-36 z-50 shadow-2xl animate-slide-down">
               {themes.map(t => (
                 <button
                   key={t.id}
@@ -163,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     playSound.click(settings.sound_effects);
                     onUpdateSettings({ theme: t.id });
                   }}
-                  className={`flex items-center gap-2 px-2.5 py-1 text-[11px] text-left hover:bg-term-elevated ${
+                  className={`flex items-center gap-2 px-3 py-1.5 text-xs text-left hover:bg-term-elevated transition-colors ${
                     settings.theme === t.id ? 'text-term-accent font-semibold' : 'text-term-text-muted'
                   }`}
                 >
@@ -174,51 +208,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Sound */}
-          <button
-            onClick={() => {
-              const next = !settings.sound_effects;
-              if (next) playSound.click(true);
-              onUpdateSettings({ sound_effects: next });
-            }}
-            className="p-1 rounded text-term-text-dim hover:text-term-accent"
-            title={`Audio FX: ${settings.sound_effects ? 'ON' : 'MUTED'}`}
-          >
-            {settings.sound_effects ? <Volume2 size={13} /> : <VolumeX size={13} />}
-          </button>
-
-          {/* CRT */}
-          <button
-            onClick={() => onUpdateSettings({ crt_effects: !settings.crt_effects })}
-            className={`p-1 rounded ${settings.crt_effects ? 'text-term-accent' : 'text-term-text-dim hover:text-term-text'}`}
-            title="CRT Scanlines"
-          >
-            <Tv size={13} />
-          </button>
-
-          {/* Cloud Auth */}
+          {/* Cloud Auth Status Pill */}
           <button
             onClick={onOpenAuth}
-            className={`flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border ${
+            className={`hidden sm:flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
               isLoggedIn
-                ? 'border-term-accent text-term-accent bg-term-accent/10'
+                ? 'border-term-accent/50 text-term-accent bg-term-accent/10 font-semibold'
                 : hasCloud
-                ? 'border-term-cyan/60 text-term-cyan'
-                : 'border-term-border text-term-text-dim'
+                ? 'border-term-cyan/40 text-term-cyan bg-term-cyan/5'
+                : 'border-term-border text-term-text-dim hover:text-term-text'
             }`}
-            title={isLoggedIn ? `Logged in: ${userEmail}` : 'Cloud Auth'}
           >
-            {isLoggedIn ? <Cloud size={11} /> : <CloudOff size={11} />}
-            <span className="hidden md:inline">{isLoggedIn ? 'SYNCED' : 'LOCAL'}</span>
+            {isLoggedIn ? <Cloud size={12} /> : <CloudOff size={12} />}
+            <span>{isLoggedIn ? 'Synced' : 'Local'}</span>
           </button>
 
-          {/* Command Palette */}
+          {/* Mobile Command Palette trigger */}
           <button
             onClick={onOpenCommandPalette}
-            className="p-1 rounded text-term-text-dim hover:text-term-text"
-            title="Command Palette (⌘K or /)"
+            className="p-1 rounded text-term-text-muted hover:text-term-accent lg:hidden"
+            title="Command Palette"
           >
-            <Command size={13} />
+            <Command size={14} />
           </button>
         </div>
       </div>

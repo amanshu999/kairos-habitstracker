@@ -1,19 +1,27 @@
 import React, { useState, useMemo } from 'react';
 import { 
-  Plus, 
+  Calendar as CalendarIcon, 
   Flame, 
-  ShieldCheck, 
+  Trophy, 
+  Crown, 
   ChevronLeft, 
   ChevronRight, 
+  ChevronRight as ArrowRightIcon,
+  Sun,
+  Sparkles, 
+  Plus, 
+  Clock, 
+  Edit3, 
+  Trash2, 
   Check, 
-  Trash2,
-  Edit3,
-  Clock,
-  Play,
-  Pause,
-  RotateCcw,
-  Minus,
-  Sparkles
+  BarChart2,
+  Laptop,
+  GitPullRequest,
+  Droplet,
+  BookOpen,
+  UserCheck,
+  Inbox,
+  Minus
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Habit, HabitLog, StreakInfo, UserSettings } from '../types';
@@ -41,17 +49,20 @@ interface DashboardProps {
   onOpenRoutineTab: () => void;
 }
 
-const DEFAULT_SUGGESTIONS = [
-  { title: 'drink water', category: 'health', type: 'numeric' as const, target: 8, unit: 'glasses', icon: '💧' },
-  { title: 'stretch', category: 'health', type: 'timer' as const, target: 10, unit: 'mins', icon: '🧘' },
-  { title: 'read 20 pages', category: 'learn', type: 'boolean' as const, target: 1, unit: 'done', icon: '📖' },
-  { title: 'daily journal', category: 'mind', type: 'boolean' as const, target: 1, unit: 'done', icon: '✍' },
-  { title: 'meditate', category: 'mind', type: 'timer' as const, target: 15, unit: 'mins', icon: '🧠' },
-  { title: 'walk 10k steps', category: 'health', type: 'numeric' as const, target: 10000, unit: 'steps', icon: '🚶' },
-  { title: 'exercise & workout', category: 'health', type: 'timer' as const, target: 30, unit: 'mins', icon: '🏃' },
-  { title: 'wake up before 8am', category: 'routine', type: 'boolean' as const, target: 1, unit: 'done', icon: '⏰' },
-  { title: 'sleep 8h', category: 'health', type: 'numeric' as const, target: 8, unit: 'hours', icon: '🛌' },
-  { title: 'no phone in bed', category: 'mind', type: 'boolean' as const, target: 1, unit: 'done', icon: '📵' },
+const SUGGESTIONS_COL1 = [
+  { title: 'Drink water', icon: '💧', category: 'health', type: 'numeric' as const, target: 8, unit: 'glasses' },
+  { title: 'Read 20 pages', icon: '📖', category: 'learn', type: 'boolean' as const, target: 1, unit: 'done' },
+  { title: 'Meditate', icon: '🧠', category: 'mind', type: 'timer' as const, target: 15, unit: 'mins' },
+  { title: 'Exercise & workout', icon: '🏃', category: 'health', type: 'timer' as const, target: 30, unit: 'mins' },
+  { title: 'Sleep 8h', icon: '🛌', category: 'health', type: 'numeric' as const, target: 8, unit: 'hours' },
+];
+
+const SUGGESTIONS_COL2 = [
+  { title: 'Stretch', icon: '🧘', category: 'health', type: 'timer' as const, target: 10, unit: 'mins' },
+  { title: 'Daily journal', icon: '✍️', category: 'mind', type: 'boolean' as const, target: 1, unit: 'done' },
+  { title: 'Walk 10k steps', icon: '🚶', category: 'health', type: 'numeric' as const, target: 10000, unit: 'steps' },
+  { title: 'Wake up before 8am', icon: '⏰', category: 'routine', type: 'boolean' as const, target: 1, unit: 'done' },
+  { title: 'No phone in bed', icon: '📵', category: 'mind', type: 'boolean' as const, target: 1, unit: 'done' },
 ];
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -66,11 +77,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onEditHabit,
   onArchiveHabit,
   onDeleteHabit,
-  onSetTheme,
-  onOpenRoutineTab,
 }) => {
+  const [quickInput, setQuickInput] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(true);
-  const [categoryFilter, setCategoryFilter] = useState('all');
 
   // Mini-calendar month state
   const [calMonth, setCalMonth] = useState<Date>(() => {
@@ -78,7 +87,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return new Date(today.getFullYear(), today.getMonth(), 1);
   });
 
-  // Today's logs lookup
+  // Group today's logs
   const todayLogsMap = useMemo(() => {
     const map = new Map<string, HabitLog>();
     for (const log of logs) {
@@ -89,7 +98,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return map;
   }, [logs, todayStr]);
 
-  // Logs grouped by date for mini heatmap and mini calendar
+  // Group logs by date
   const logsByDate = useMemo(() => {
     const map = new Map<string, HabitLog[]>();
     for (const log of logs) {
@@ -104,11 +113,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return habits.filter(h => !h.archived && isHabitDueOnDate(h.frequency, h.custom_days, todayStr));
   }, [habits, todayStr]);
 
-  // Completion calculation
   const totalDue = activeHabitsDueToday.length;
   const completedToday = activeHabitsDueToday.filter(h => {
-    const log = todayLogsMap.get(h.id);
-    return Boolean(log?.completed);
+    return Boolean(todayLogsMap.get(h.id)?.completed);
   }).length;
   const percentage = totalDue > 0 ? Math.round((completedToday / totalDue) * 100) : 0;
 
@@ -118,29 +125,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
     if (s.currentStreak > maxCurrentStreak) maxCurrentStreak = s.currentStreak;
   }
 
-  // XP & Gamification Level Calculation
+  // Level & XP calculation
   const totalCompletedEver = logs.filter(l => l.completed).length;
-  const currentLevel = Math.floor(totalCompletedEver / 10) + 1;
-  const xpInCurrentLevel = (totalCompletedEver % 10) * 10;
+  const currentLevel = Math.max(1, Math.floor(totalCompletedEver / 4) + 1);
+  const xpInCurrentLevel = (totalCompletedEver % 4) * 25;
   const xpToNext = 100 - xpInCurrentLevel;
 
-  // Date Header String: e.g. "Thursday, October 29, 2026"
+  // Header Date String: "Thu, Oct 29, 2026"
   const formattedTodayDate = parseDateString(todayStr).toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
+    weekday: 'short',
+    month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
 
-  // Mini Calendar generation (mo, tu, we, th, fr, sa, su)
-  const miniCalendarDays = useMemo(() => {
+  // Calendar matrix calculation
+  const calendarDays = useMemo(() => {
     const year = calMonth.getFullYear();
     const month = calMonth.getMonth();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
 
-    let startDayOfWeek = firstDay.getDay(); // 0 is Sun, 1 is Mon
-    startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; // convert to Mon=0 .. Sun=6
+    let startDayOfWeek = firstDay.getDay(); // 0 is Sun
+    startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; // Mon=0 .. Sun=6
 
     const days: Array<{
       dateStr: string;
@@ -194,132 +201,162 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return days;
   }, [calMonth, todayStr, logsByDate]);
 
-  // Mini Heatmap generation (past 16 weeks)
-  const miniHeatmapData = useMemo(() => {
+  // Contributions Matrix (7 rows = Mon-Sun, 18 columns = 18 weeks)
+  const contributionsGrid = useMemo(() => {
     const today = parseDateString(todayStr);
-    const totalWeeks = 16;
-    const dayOfWeek = today.getDay();
+    const totalWeeks = 18;
+    const dayOfWeek = today.getDay(); // 0 Sun
+    const convertedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 0 Mon..6 Sun
+    
+    // Start totalWeeks ago on Monday
     const startDate = new Date(today);
-    startDate.setDate(startDate.getDate() - (totalWeeks * 7) + (6 - dayOfWeek));
+    startDate.setDate(startDate.getDate() - (totalWeeks * 7) + (6 - convertedDay));
 
-    const weeks: Array<Array<{
-      dateStr: string;
-      level: 0 | 1 | 2 | 3 | 4;
-    }>> = [];
+    const grid: Array<Array<{ dateStr: string; level: number }>> = [
+      [], [], [], [], [], [], []
+    ]; // 7 days of week
 
-    let currentWeek: Array<{ dateStr: string; level: 0 | 1 | 2 | 3 | 4 }> = [];
     const runner = new Date(startDate);
-
     while (runner <= today) {
       const dStr = formatDateString(runner);
+      let dow = runner.getDay();
+      dow = dow === 0 ? 6 : dow - 1;
+
       const dayLogs = logsByDate.get(dStr) || [];
       const completed = dayLogs.filter(l => l.completed).length;
 
-      let level: 0 | 1 | 2 | 3 | 4 = 0;
+      let level = 0;
       if (completed >= 5) level = 4;
       else if (completed >= 3) level = 3;
       else if (completed >= 2) level = 2;
       else if (completed >= 1) level = 1;
 
-      currentWeek.push({ dateStr: dStr, level });
-
-      if (runner.getDay() === 6) {
-        weeks.push(currentWeek);
-        currentWeek = [];
-      }
+      grid[dow].push({ dateStr: dStr, level });
       runner.setDate(runner.getDate() + 1);
     }
-    if (currentWeek.length > 0) weeks.push(currentWeek);
 
-    return weeks;
+    return grid;
   }, [todayStr, logsByDate]);
 
-  // Filtered habits
-  const displayedHabits = useMemo(() => {
-    return activeHabitsDueToday.filter(h => {
-      if (categoryFilter !== 'all' && h.category.toLowerCase() !== categoryFilter.toLowerCase()) {
-        return false;
-      }
-      return true;
-    });
-  }, [activeHabitsDueToday, categoryFilter]);
+  const handleQuickAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickInput.trim()) return;
+    onOpenNewHabit(quickInput.trim());
+    setQuickInput('');
+  };
 
-  const handleAddSuggestion = (s: typeof DEFAULT_SUGGESTIONS[0]) => {
-    playSound.complete(settings.sound_effects);
-    onOpenNewHabit(`${s.icon} ${s.title}`);
+  const getHabitIcon = (title: string, category: string) => {
+    const lower = title.toLowerCase();
+    if (lower.includes('git') || lower.includes('commit') || lower.includes('pr')) return <GitPullRequest size={16} className="text-term-text-muted" />;
+    if (lower.includes('deep work') || lower.includes('code') || lower.includes('arch')) return <Laptop size={16} className="text-term-cyan" />;
+    if (lower.includes('water') || lower.includes('drink') || lower.includes('hydrat')) return <Droplet size={16} className="text-sky-400" />;
+    if (lower.includes('doc') || lower.includes('book') || lower.includes('read')) return <BookOpen size={16} className="text-term-cyan" />;
+    if (lower.includes('stretch') || lower.includes('posture') || lower.includes('yoga')) return <UserCheck size={16} className="text-term-amber" />;
+    if (lower.includes('inbox') || lower.includes('email') || lower.includes('task')) return <Inbox size={16} className="text-orange-400" />;
+    return <Sparkles size={16} className="text-term-accent" />;
   };
 
   return (
     <div className="font-mono text-xs text-term-text space-y-4">
-      {/* 2-Column Split: Left Widgets & Right Habits */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         
-        {/* ================= LEFT COLUMN ================= */}
+        {/* ================= MIDDLE WIDGETS COLUMN (~320px) ================= */}
         <div className="lg:col-span-4 space-y-4">
           
-          {/* 1. $ status Card */}
-          <div className="border border-term-border rounded bg-term-surface p-3.5 space-y-2.5">
-            <div className="text-term-accent font-bold text-xs flex items-center gap-1.5">
-              <span>$</span>
-              <span>status</span>
-            </div>
-
-            <div className="text-term-text font-medium text-xs">
-              {formattedTodayDate}
-            </div>
-
-            <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1 text-term-accent font-semibold">
-                <Flame size={12} className="text-term-accent" />
-                <span>{maxCurrentStreak} days</span>
-              </span>
-              <span className="flex items-center gap-1 text-term-text-muted">
-                <ShieldCheck size={12} className="text-term-cyan" />
-                <span>{settings.streak_protection_tokens || 0}</span>
+          {/* 1. Today Card */}
+          <div className="rounded-2xl border border-term-border bg-term-surface p-4 space-y-3.5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 font-bold text-term-text text-sm">
+                <div className="w-5 h-5 rounded-md bg-term-accent/20 flex items-center justify-center text-term-accent">
+                  <CalendarIcon size={13} />
+                </div>
+                <span>Today</span>
+              </div>
+              <span className="text-[11px] text-term-text-muted">
+                {formattedTodayDate}
               </span>
             </div>
 
-            {/* Progress Bar & Percentage */}
-            <div className="space-y-1 pt-1">
-              <div className="w-full bg-term-elevated rounded-full h-1.5 overflow-hidden border border-term-border">
+            {/* Streak & Milestones Stat Boxes */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="p-3 rounded-xl bg-term-elevated/70 border border-term-border/80 flex items-center gap-2.5">
+                <Flame size={20} className="text-term-amber fill-term-amber/30 shrink-0" />
+                <div>
+                  <div className="font-bold text-sm text-term-text">
+                    {maxCurrentStreak} days
+                  </div>
+                  <div className="text-[10px] text-term-text-dim">
+                    current streak
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-term-elevated/70 border border-term-border/80 flex items-center gap-2.5">
+                <Trophy size={18} className="text-yellow-400 shrink-0" />
+                <div>
+                  <div className="font-bold text-sm text-term-text">
+                    3
+                  </div>
+                  <div className="text-[10px] text-term-text-dim">
+                    milestones
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Daily Progress */}
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between text-xs font-medium">
+                <span className="text-term-text">Daily Progress</span>
+                <span className="text-term-text-muted">{completedToday} / {totalDue}</span>
+              </div>
+              <div className="w-full bg-term-elevated rounded-full h-2 overflow-hidden border border-term-border">
                 <div 
-                  className="bg-term-accent h-full transition-all duration-300"
+                  className="bg-term-accent h-full transition-all duration-300 rounded-full"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
               <div className="flex items-center justify-between text-[11px] text-term-text-dim">
-                <span>{percentage}% [{completedToday}/{totalDue}]</span>
-                <span>// goal: 60%</span>
+                <span>{percentage}% complete</span>
+                <span>Goal: 60%</span>
               </div>
             </div>
 
-            {/* Gamification Level */}
-            <div className="text-[11px] text-term-text-dim border-t border-term-border/60 pt-2 flex items-center justify-between">
-              <span>level: <strong className="text-term-accent">{currentLevel}</strong></span>
-              <span>[{xpToNext}xp to next]</span>
+            {/* Level Banner */}
+            <div className="p-2.5 rounded-xl bg-term-elevated/50 border border-term-border flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1.5 font-bold text-term-accent">
+                <Crown size={14} className="text-yellow-400" />
+                <span>Level {currentLevel}</span>
+              </div>
+              <div className="flex items-center gap-1 text-term-text-dim hover:text-term-text cursor-pointer">
+                <span>{xpToNext}xp to next</span>
+                <ArrowRightIcon size={12} />
+              </div>
             </div>
           </div>
 
-          {/* 2. $ calendar Card */}
-          <div className="border border-term-border rounded bg-term-surface p-3.5 space-y-2.5">
-            <div className="flex items-center justify-between text-xs">
-              <div className="text-term-accent font-bold flex items-center gap-1.5">
-                <span>$</span>
-                <span>calendar</span>
+          {/* 2. Calendar Card */}
+          <div className="rounded-2xl border border-term-border bg-term-surface p-4 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 font-bold text-term-text text-sm">
+                <div className="w-5 h-5 rounded-md bg-term-accent/20 flex items-center justify-center text-term-accent">
+                  <CalendarIcon size={13} />
+                </div>
+                <span>Calendar</span>
               </div>
-              <div className="flex items-center gap-1 text-term-text-dim">
+              <div className="flex items-center gap-2 text-xs">
                 <button 
                   onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1))}
-                  className="hover:text-term-text"
+                  className="p-1 rounded-md bg-term-elevated hover:bg-term-hover text-term-text-muted hover:text-term-text"
                 >
                   <ChevronLeft size={13} />
                 </button>
-                <span className="text-[11px] uppercase">
-                  {calMonth.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                <span className="font-semibold text-term-text">
+                  {calMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                 </span>
                 <button 
                   onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1))}
-                  className="hover:text-term-text"
+                  className="p-1 rounded-md bg-term-elevated hover:bg-term-hover text-term-text-muted hover:text-term-text"
                 >
                   <ChevronRight size={13} />
                 </button>
@@ -327,317 +364,368 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
 
             {/* Weekday headers */}
-            <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-term-text-dim font-bold pb-1 border-b border-term-border/40">
-              <span>mo</span>
-              <span>tu</span>
-              <span>we</span>
-              <span>th</span>
-              <span>fr</span>
-              <span>sa</span>
-              <span>su</span>
+            <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-term-text-dim font-bold pb-1">
+              <span>Mo</span>
+              <span>Tu</span>
+              <span>We</span>
+              <span>Th</span>
+              <span>Fr</span>
+              <span>Sa</span>
+              <span>Su</span>
             </div>
 
             {/* Calendar Grid */}
             <div className="grid grid-cols-7 gap-1 text-center text-xs">
-              {miniCalendarDays.map((d) => {
+              {calendarDays.map((d) => {
                 const isSelected = d.isToday;
                 return (
                   <div
                     key={d.dateStr}
-                    className={`py-1 rounded text-[11px] ${
+                    className={`py-1.5 rounded-lg text-xs transition-colors ${
                       isSelected
-                        ? 'bg-term-accent text-black font-bold'
+                        ? 'bg-term-accent text-black font-bold shadow-sm'
                         : d.hasCompleted
-                        ? 'text-term-accent font-semibold'
+                        ? 'text-term-accent font-semibold hover:bg-term-elevated'
                         : d.isCurrentMonth
-                        ? 'text-term-text-muted hover:text-term-text'
+                        ? 'text-term-text-muted hover:bg-term-elevated/40 hover:text-term-text'
                         : 'text-term-text-dim/40'
                     }`}
                   >
-                    {isSelected ? `*${d.dayNumber}` : d.dayNumber}
+                    {d.dayNumber}
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* 3. $ contributions Card */}
-          <div className="border border-term-border rounded bg-term-surface p-3.5 space-y-2">
-            <div className="text-term-accent font-bold text-xs flex items-center gap-1.5">
-              <span>$</span>
-              <span>contributions</span>
+          {/* 3. Contributions Card */}
+          <div className="rounded-2xl border border-term-border bg-term-surface p-4 space-y-3 shadow-sm">
+            <div className="flex items-center gap-2 font-bold text-term-text text-sm">
+              <div className="w-5 h-5 rounded-md bg-term-accent/20 flex items-center justify-center text-term-accent">
+                <BarChart2 size={13} />
+              </div>
+              <span>Contributions</span>
             </div>
 
-            <div className="overflow-x-auto pb-1 scrollbar-none">
-              <div className="flex gap-1 min-w-[200px]">
-                {miniHeatmapData.map((week, idx) => (
-                  <div key={idx} className="flex flex-col gap-1">
-                    {week.map((cell) => {
-                      let cellColor = 'bg-term-elevated/40 border-term-border/40';
-                      if (cell.level === 4) cellColor = 'bg-term-accent border-term-accent';
-                      else if (cell.level === 3) cellColor = 'bg-emerald-600 border-emerald-500';
-                      else if (cell.level === 2) cellColor = 'bg-emerald-800 border-emerald-700';
+            {/* 7-Row Matrix */}
+            <div className="flex gap-2.5 items-center">
+              {/* Day Labels */}
+              <div className="flex flex-col justify-between text-[9px] text-term-text-dim font-mono h-28 py-0.5 select-none">
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+                <span>Sun</span>
+              </div>
+
+              {/* Grid */}
+              <div className="overflow-x-auto pb-1 scrollbar-none flex-1">
+                <div className="grid grid-rows-7 grid-flow-col gap-1.5 min-w-[220px]">
+                  {contributionsGrid.map((row) =>
+                    row.map((cell) => {
+                      let cellColor = 'bg-term-elevated/40 border-term-border/30';
+                      if (cell.level === 4) cellColor = 'bg-term-accent border-term-accent shadow-[0_0_6px_rgba(34,197,94,0.4)]';
+                      else if (cell.level === 3) cellColor = 'bg-emerald-500 border-emerald-400';
+                      else if (cell.level === 2) cellColor = 'bg-emerald-700 border-emerald-600';
                       else if (cell.level === 1) cellColor = 'bg-emerald-950 border-emerald-900';
 
                       return (
                         <div
                           key={cell.dateStr}
-                          className={`w-2.5 h-2.5 rounded-sm border ${cellColor}`}
+                          className={`w-3 h-3 rounded-xs border transition-all ${cellColor}`}
                           title={cell.dateStr}
                         />
                       );
-                    })}
-                  </div>
-                ))}
+                    })
+                  )}
+                </div>
               </div>
             </div>
 
             <div className="flex items-center justify-between text-[10px] text-term-text-dim pt-1 border-t border-term-border/40">
-              <span>// less</span>
-              <div className="flex items-center gap-0.5">
-                <span className="w-2 h-2 rounded-xs bg-term-elevated border border-term-border" />
-                <span className="w-2 h-2 rounded-xs bg-emerald-950 border border-emerald-900" />
-                <span className="w-2 h-2 rounded-xs bg-emerald-800 border border-emerald-700" />
-                <span className="w-2 h-2 rounded-xs bg-emerald-600 border border-emerald-500" />
-                <span className="w-2 h-2 rounded-xs bg-term-accent border border-term-accent" />
+              <span>Less</span>
+              <div className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-xs bg-term-elevated border border-term-border" />
+                <span className="w-2.5 h-2.5 rounded-xs bg-emerald-950 border border-emerald-900" />
+                <span className="w-2.5 h-2.5 rounded-xs bg-emerald-700 border border-emerald-600" />
+                <span className="w-2.5 h-2.5 rounded-xs bg-emerald-500 border border-emerald-400" />
+                <span className="w-2.5 h-2.5 rounded-xs bg-term-accent border border-term-accent" />
               </div>
-              <span>more</span>
+              <span>More</span>
             </div>
           </div>
 
         </div>
 
-        {/* ================= RIGHT COLUMN: HABITS ================= */}
-        <div className="lg:col-span-8 border border-term-border-strong rounded bg-term-surface p-4 sm:p-5 space-y-4">
+        {/* ================= RIGHT MAIN COLUMN ================= */}
+        <div className="lg:col-span-8 space-y-4">
           
-          {/* Header Prompt */}
-          <div className="border-b border-term-border pb-3 space-y-1">
-            <div className="flex items-center justify-between">
-              <div className="text-xs">
-                <span className="text-term-accent font-semibold">{settings.display_name}</span>
-                <span className="text-term-text-dim"> $ </span>
-                <span className="text-term-text font-bold">daily</span>
+          {/* 1. Daily Habits Card */}
+          <div className="rounded-2xl border border-term-border bg-term-surface p-5 space-y-4 shadow-sm">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-term-border pb-3.5">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-term-accent/15 border border-term-accent/30 flex items-center justify-center text-term-accent shrink-0 mt-0.5">
+                  <Sun size={18} />
+                </div>
+                <div>
+                  <h2 className="font-bold text-base text-term-text tracking-tight">
+                    Daily Habits
+                  </h2>
+                  <p className="text-xs text-term-text-dim italic mt-0.5">
+                    The irony of tracking habits: it&apos;s a habit you have to build first.
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-term-text-dim">
+
+              {/* Circular Percentage Ring */}
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-term-text-muted font-medium">
                   {completedToday}/{totalDue} done
                 </span>
+                <div className="w-10 h-10 rounded-full border-2 border-term-border flex items-center justify-center text-xs font-bold text-term-text relative">
+                  <div 
+                    className="absolute inset-0 rounded-full border-2 border-term-accent"
+                    style={{
+                      clipPath: `polygon(50% 50%, 50% 0%, ${percentage >= 25 ? '100% 0%,' : ''} ${percentage >= 50 ? '100% 100%,' : ''} ${percentage >= 75 ? '0% 100%,' : ''} 0% 0%)`
+                    }}
+                  />
+                  <span>{percentage}%</span>
+                </div>
               </div>
             </div>
-            <p className="text-[11px] text-term-text-dim italic">
-              // the irony of tracking habits: it&apos;s a habit you have to build first.
-            </p>
-          </div>
 
-          {/* Active Habits List */}
-          <div className="space-y-2">
-            {displayedHabits.map((habit) => {
-              const log = todayLogsMap.get(habit.id);
-              const isCompleted = Boolean(log?.completed);
-              const currentValue = log?.value ?? 0;
-              const streak = streakMap.get(habit.id) || { currentStreak: 0, longestStreak: 0, totalCompletions: 0, isCompletedToday: false, freezeUsedDays: [] };
+            {/* Habit Rows */}
+            <div className="space-y-2.5">
+              {activeHabitsDueToday.map((habit) => {
+                const log = todayLogsMap.get(habit.id);
+                const isCompleted = Boolean(log?.completed);
+                const currentValue = log?.value ?? 0;
+                const streak = streakMap.get(habit.id) || { currentStreak: 0, longestStreak: 0, totalCompletions: 0, isCompletedToday: false, freezeUsedDays: [] };
 
-              return (
-                <div
-                  key={habit.id}
-                  className={`p-2.5 rounded border transition-colors flex items-center justify-between gap-3 text-xs ${
-                    isCompleted
-                      ? 'border-term-accent/40 bg-term-accent/5'
-                      : 'border-term-border bg-term-elevated/40 hover:border-term-border-strong'
-                  }`}
-                >
-                  {/* Left: Checkbox & Title */}
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <button
-                      onClick={() => {
-                        const next = !isCompleted;
-                        if (next) {
-                          playSound.complete(settings.sound_effects);
-                          try {
-                            confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 }, colors: ['#22c55e', '#06b6d4', '#eab308'] });
-                          } catch { /* ignore */ }
-                        } else {
-                          playSound.undo(settings.sound_effects);
-                        }
-                        onToggleComplete(habit.id, next, next ? habit.target_value : 0);
-                      }}
-                      className={`w-4 h-4 rounded-xs border flex items-center justify-center font-bold text-[10px] transition-colors shrink-0 ${
-                        isCompleted
-                          ? 'bg-term-accent text-black border-term-accent'
-                          : 'border-term-border-strong bg-term-surface hover:border-term-accent'
-                      }`}
-                    >
-                      {isCompleted ? <Check size={11} strokeWidth={3} /> : ''}
-                    </button>
-
-                    <div className="truncate">
-                      <span className={`font-medium ${isCompleted ? 'line-through text-term-text-muted' : 'text-term-text'}`}>
-                        {habit.title}
-                      </span>
-                      {habit.frequency !== 'daily' && (
-                        <span className="text-[10px] text-term-text-dim ml-1.5">
-                          ({habit.frequency})
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right: Counter / Timer badges & actions */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    {/* Numeric +/- buttons */}
-                    {habit.type === 'numeric' && (
-                      <div className="flex items-center gap-1 bg-term-surface px-1.5 py-0.5 rounded border border-term-border text-[11px]">
-                        <button
-                          onClick={() => onUpdateValue(habit.id, Math.max(0, currentValue - 1))}
-                          className="text-term-text-dim hover:text-term-text px-1"
-                        >
-                          -
-                        </button>
-                        <span className={`font-mono font-bold ${isCompleted ? 'text-term-accent' : 'text-term-text'}`}>
-                          {currentValue}/{habit.target_value}
-                        </span>
-                        <button
-                          onClick={() => onUpdateValue(habit.id, currentValue + 1)}
-                          className="text-term-text-dim hover:text-term-accent px-1"
-                        >
-                          +
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Timer mode badge */}
-                    {habit.type === 'timer' && (
+                return (
+                  <div
+                    key={habit.id}
+                    className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 text-xs ${
+                      isCompleted
+                        ? 'border-term-accent/40 bg-term-accent/5'
+                        : 'border-term-border bg-term-elevated/40 hover:border-term-border-strong hover:bg-term-elevated'
+                    }`}
+                  >
+                    {/* Left: Checkbox + Icon + Title + Tags */}
+                    <div className="flex items-center gap-3 min-w-0">
                       <button
                         onClick={() => {
                           const next = !isCompleted;
+                          if (next) {
+                            playSound.complete(settings.sound_effects);
+                            try {
+                              confetti({ particleCount: 35, spread: 60, origin: { y: 0.8 }, colors: ['#22c55e', '#06b6d4', '#f59e0b'] });
+                            } catch { /* ignore */ }
+                          } else {
+                            playSound.undo(settings.sound_effects);
+                          }
                           onToggleComplete(habit.id, next, next ? habit.target_value : 0);
                         }}
-                        className={`flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded border ${
+                        className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all shrink-0 ${
                           isCompleted
-                            ? 'border-term-accent text-term-accent bg-term-accent/10'
-                            : 'border-term-cyan/40 text-term-cyan'
+                            ? 'bg-term-accent text-black border-term-accent shadow-sm'
+                            : 'border-term-border-strong bg-term-surface hover:border-term-accent'
                         }`}
                       >
-                        <Clock size={11} />
-                        <span>{habit.target_value}m</span>
+                        {isCompleted && <Check size={13} strokeWidth={3} />}
                       </button>
-                    )}
 
-                    {/* Streak badge */}
-                    <span 
-                      className="text-[11px] text-term-amber flex items-center gap-0.5"
-                      title={`Streak: ${streak.currentStreak} days`}
-                    >
-                      <Flame size={11} />
-                      <span>{streak.currentStreak}d</span>
-                    </span>
+                      <div className="shrink-0">
+                        {getHabitIcon(habit.title, habit.category)}
+                      </div>
 
-                    {/* Edit menu */}
-                    <button
-                      onClick={() => onEditHabit(habit)}
-                      className="text-term-text-dim hover:text-term-text p-1"
-                      title="Edit"
-                    >
-                      <Edit3 size={11} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm(`Delete habit "${habit.title}"?`)) onDeleteHabit(habit.id);
-                      }}
-                      className="text-term-text-dim hover:text-term-red p-1"
-                      title="Delete"
-                    >
-                      <Trash2 size={11} />
-                    </button>
+                      <div className="flex items-center gap-2 truncate">
+                        <span className={`font-medium truncate ${isCompleted ? 'line-through text-term-text-muted' : 'text-term-text'}`}>
+                          {habit.title}
+                        </span>
+                        {habit.frequency !== 'daily' && (
+                          <span className="text-[10px] text-term-text-dim px-2 py-0.5 rounded-full bg-term-surface border border-term-border shrink-0">
+                            {habit.frequency}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right: Counter / Timer / Streak / Actions */}
+                    <div className="flex items-center gap-3 shrink-0">
+                      {/* Timer Badge */}
+                      {habit.type === 'timer' && (
+                        <button
+                          onClick={() => {
+                            const next = !isCompleted;
+                            onToggleComplete(habit.id, next, next ? habit.target_value : 0);
+                          }}
+                          className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                            isCompleted
+                              ? 'border-term-accent text-term-accent bg-term-accent/10'
+                              : 'border-term-cyan/40 text-term-cyan bg-term-cyan/10 hover:border-term-cyan'
+                          }`}
+                        >
+                          <Clock size={12} />
+                          <span>{habit.target_value}m</span>
+                        </button>
+                      )}
+
+                      {/* Numeric Stepper */}
+                      {habit.type === 'numeric' && (
+                        <div className="flex items-center gap-1.5 bg-term-surface px-2.5 py-1 rounded-full border border-term-border text-xs">
+                          <button
+                            onClick={() => onUpdateValue(habit.id, Math.max(0, currentValue - 1))}
+                            className="text-term-text-dim hover:text-term-text"
+                          >
+                            <Minus size={11} />
+                          </button>
+                          <span className={`font-bold ${isCompleted ? 'text-term-accent' : 'text-term-text'}`}>
+                            {currentValue}/{habit.target_value}
+                          </span>
+                          <button
+                            onClick={() => onUpdateValue(habit.id, currentValue + 1)}
+                            className="text-term-text-dim hover:text-term-accent"
+                          >
+                            <Plus size={11} />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Streak Badge */}
+                      <span className="flex items-center gap-1 text-term-amber font-semibold text-xs">
+                        <Flame size={13} className="text-term-amber fill-term-amber/30" />
+                        <span>{streak.currentStreak}d</span>
+                      </span>
+
+                      {/* Action Icons */}
+                      <button
+                        onClick={() => onEditHabit(habit)}
+                        className="text-term-text-dim hover:text-term-text transition-colors p-1"
+                        title="Edit Habit"
+                      >
+                        <Edit3 size={13} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete habit "${habit.title}"?`)) onDeleteHabit(habit.id);
+                        }}
+                        className="text-term-text-dim hover:text-term-red transition-colors p-1"
+                        title="Delete Habit"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
+                );
+              })}
+
+              {activeHabitsDueToday.length === 0 && (
+                <div className="py-8 text-center text-term-text-dim text-xs border border-dashed border-term-border rounded-xl">
+                  No habits scheduled for today. Add one below!
                 </div>
-              );
-            })}
-
-            {displayedHabits.length === 0 && (
-              <div className="py-6 text-center text-term-text-dim text-xs border border-dashed border-term-border rounded">
-                // no habits due for today.
-              </div>
-            )}
-          </div>
-
-          {/* Quick Suggestions / Library Section */}
-          <div className="pt-3 border-t border-term-border space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-term-accent font-bold text-xs flex items-center gap-1">
-                <span>$</span>
-                <span>suggestions</span>
-              </span>
-              <button
-                onClick={() => setShowSuggestions(!showSuggestions)}
-                className="text-[11px] text-term-text-dim hover:text-term-text"
-              >
-                {showSuggestions ? '[hide]' : '[expand]'}
-              </button>
+              )}
             </div>
 
+            {/* Quick Add Habit Bar */}
+            <form onSubmit={handleQuickAdd} className="pt-2 flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-term-accent/20 border border-term-accent/40 flex items-center justify-center text-term-accent shrink-0">
+                <Plus size={14} />
+              </div>
+              <span className="text-xs font-semibold text-term-text shrink-0 hidden sm:inline">
+                Quick Add Habit
+              </span>
+              <input
+                type="text"
+                value={quickInput}
+                onChange={e => setQuickInput(e.target.value)}
+                placeholder="What habit do you want to build?"
+                className="flex-1 px-3.5 py-2 rounded-xl bg-term-elevated border border-term-border focus:border-term-accent text-term-text text-xs focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={!quickInput.trim()}
+                className="px-4 py-2 rounded-xl bg-term-accent text-black font-bold text-xs hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
+              >
+                Add Habit
+              </button>
+            </form>
+          </div>
+
+          {/* 2. Suggestions Card */}
+          <div className="rounded-2xl border border-term-border bg-term-surface p-5 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 font-bold text-term-text text-sm">
+                <Sparkles size={16} className="text-term-accent" />
+                <span>Suggestions</span>
+              </div>
+              <button
+                onClick={() => setShowSuggestions(!showSuggestions)}
+                className="text-xs text-term-text-dim hover:text-term-text"
+              >
+                {showSuggestions ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            
+            <p className="text-xs text-term-text-dim italic">
+              Click [add] to quick-start any standard daily ritual.
+            </p>
+
             {showSuggestions && (
-              <div className="space-y-1 text-xs">
-                <p className="text-[11px] text-term-text-dim italic">
-                  // click [add] to quick-start any standard daily ritual.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
-                  {DEFAULT_SUGGESTIONS.map((item, idx) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
+                {/* Column 1 */}
+                <div className="space-y-2">
+                  {SUGGESTIONS_COL1.map((item, idx) => (
                     <div
                       key={idx}
-                      className="p-1.5 rounded border border-term-border bg-term-elevated/20 flex items-center justify-between text-xs hover:border-term-border-strong"
+                      className="p-2.5 rounded-xl border border-term-border bg-term-elevated/40 flex items-center justify-between text-xs hover:border-term-border-strong"
                     >
-                      <div className="flex items-center gap-1.5 truncate">
-                        <span className="text-term-text-dim text-[11px]">[ ]</span>
-                        <span className="mr-1">{item.icon}</span>
-                        <span className="truncate text-term-text">{item.title}</span>
+                      <div className="flex items-center gap-2.5">
+                        <span>{item.icon}</span>
+                        <span className="font-medium text-term-text">{item.title}</span>
                       </div>
                       <button
-                        onClick={() => handleAddSuggestion(item)}
-                        className="text-term-accent hover:underline font-bold text-[11px] shrink-0 ml-2"
+                        onClick={() => {
+                          playSound.complete(settings.sound_effects);
+                          onOpenNewHabit(`${item.icon} ${item.title}`);
+                        }}
+                        className="px-2.5 py-1 rounded-lg border border-term-border bg-term-surface hover:border-term-accent text-term-accent font-semibold text-[11px] transition-colors"
                       >
-                        [add]
+                        + Add
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Column 2 */}
+                <div className="space-y-2">
+                  {SUGGESTIONS_COL2.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="p-2.5 rounded-xl border border-term-border bg-term-elevated/40 flex items-center justify-between text-xs hover:border-term-border-strong"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span>{item.icon}</span>
+                        <span className="font-medium text-term-text">{item.title}</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          playSound.complete(settings.sound_effects);
+                          onOpenNewHabit(`${item.icon} ${item.title}`);
+                        }}
+                        className="px-2.5 py-1 rounded-lg border border-term-border bg-term-surface hover:border-term-accent text-term-accent font-semibold text-[11px] transition-colors"
+                      >
+                        + Add
                       </button>
                     </div>
                   ))}
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Bottom Action Buttons */}
-          <div className="pt-3 border-t border-term-border flex items-center justify-between flex-wrap gap-2 text-xs">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onOpenNewHabit()}
-                className="px-2.5 py-1 rounded bg-term-accent text-black font-bold text-xs hover:opacity-90 flex items-center gap-1"
-              >
-                <Plus size={12} strokeWidth={3} />
-                <span>+ habit</span>
-              </button>
-              <button
-                onClick={onOpenRoutineTab}
-                className="px-2.5 py-1 rounded bg-term-elevated border border-term-border hover:border-term-accent text-term-text text-xs"
-              >
-                + routine
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2 text-[11px] text-term-text-dim">
-              <button 
-                onClick={() => setCategoryFilter(categoryFilter === 'all' ? 'health' : categoryFilter === 'health' ? 'dev' : 'all')}
-                className="hover:text-term-text"
-              >
-                [filter: {categoryFilter}]
-              </button>
-              <span>·</span>
-              <button 
-                onClick={() => onOpenNewHabit()}
-                className="hover:text-term-accent"
-              >
-                [custom]
-              </button>
-            </div>
           </div>
 
         </div>

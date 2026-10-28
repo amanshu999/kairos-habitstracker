@@ -7,6 +7,7 @@ import { getCurrentUser, getSupabaseClient } from './lib/supabase';
 import { playSound } from './lib/audio';
 
 import { Navbar } from './components/Navbar';
+import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { RoutinesView } from './components/RoutinesView';
 import { AnalyticsView } from './components/AnalyticsView';
@@ -384,77 +385,87 @@ export function App() {
         userEmail={userEmail}
       />
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 pb-20">
-        {isLoading ? (
-          <div className="py-24 text-center space-y-3 font-mono">
-            <div className="inline-block w-6 h-6 border-2 border-term-accent border-t-transparent rounded-full animate-spin" />
-            <div className="text-xs text-term-text-muted">
-              $ loading system kernel &amp; indexeddb...
+      {/* Layout Wrapper with Sidebar & Main Area */}
+      <div className="flex-1 flex max-w-[1700px] w-full mx-auto">
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenShortcuts={() => setIsShortcutsOpen(true)}
+          soundEnabled={settings.sound_effects}
+        />
+
+        <main className="flex-1 p-3 sm:p-5 lg:p-6 pb-20 min-w-0">
+          {isLoading ? (
+            <div className="py-24 text-center space-y-3 font-mono">
+              <div className="inline-block w-6 h-6 border-2 border-term-accent border-t-transparent rounded-full animate-spin" />
+              <div className="text-xs text-term-text-muted">
+                $ loading system kernel &amp; indexeddb...
+              </div>
             </div>
-          </div>
-        ) : (
-          <>
-            {activeTab === 'dashboard' && (
-              <Dashboard
-                habits={habits}
-                logs={logs}
-                todayStr={todayStr}
-                settings={settings}
-                streakMap={streakMap}
-                onToggleComplete={handleToggleComplete}
-                onUpdateValue={handleUpdateValue}
-                onOpenNewHabit={(prefill) => {
-                  setEditingHabit(null);
-                  setHabitPrefillTitle(prefill || '');
-                  setIsHabitModalOpen(true);
-                }}
-                onEditHabit={(h) => {
-                  setEditingHabit(h);
-                  setIsHabitModalOpen(true);
-                }}
-                onArchiveHabit={handleArchiveHabit}
-                onDeleteHabit={handleDeleteHabit}
-                onSetTheme={(theme: ThemeType) => handleUpdateSettings({ theme })}
-                onOpenRoutineTab={() => setActiveTab('routines')}
-              />
-            )}
+          ) : (
+            <>
+              {activeTab === 'dashboard' && (
+                <Dashboard
+                  habits={habits}
+                  logs={logs}
+                  todayStr={todayStr}
+                  settings={settings}
+                  streakMap={streakMap}
+                  onToggleComplete={handleToggleComplete}
+                  onUpdateValue={handleUpdateValue}
+                  onOpenNewHabit={(prefill) => {
+                    setEditingHabit(null);
+                    setHabitPrefillTitle(prefill || '');
+                    setIsHabitModalOpen(true);
+                  }}
+                  onEditHabit={(h) => {
+                    setEditingHabit(h);
+                    setIsHabitModalOpen(true);
+                  }}
+                  onArchiveHabit={handleArchiveHabit}
+                  onDeleteHabit={handleDeleteHabit}
+                  onSetTheme={(theme: ThemeType) => handleUpdateSettings({ theme })}
+                  onOpenRoutineTab={() => setActiveTab('routines')}
+                />
+              )}
 
-            {activeTab === 'routines' && (
-              <RoutinesView
-                routines={routines}
-                habits={habits}
-                logs={logs}
-                todayStr={todayStr}
-                settings={settings}
-                onSaveRoutine={handleSaveRoutine}
-                onDeleteRoutine={handleDeleteRoutine}
-                onToggleCompleteHabit={handleToggleComplete}
-              />
-            )}
+              {activeTab === 'routines' && (
+                <RoutinesView
+                  routines={routines}
+                  habits={habits}
+                  logs={logs}
+                  todayStr={todayStr}
+                  settings={settings}
+                  onSaveRoutine={handleSaveRoutine}
+                  onDeleteRoutine={handleDeleteRoutine}
+                  onToggleCompleteHabit={handleToggleComplete}
+                />
+              )}
 
-            {activeTab === 'analytics' && (
-              <AnalyticsView
-                habits={habits}
-                logs={logs}
-                streakMap={streakMap}
-                todayStr={todayStr}
-              />
-            )}
+              {activeTab === 'analytics' && (
+                <AnalyticsView
+                  habits={habits}
+                  logs={logs}
+                  streakMap={streakMap}
+                  todayStr={todayStr}
+                />
+              )}
 
-            {activeTab === 'calendar' && (
-              <CalendarView
-                habits={habits}
-                logs={logs}
-                todayStr={todayStr}
-                settings={settings}
-                onToggleCompleteHabit={handleToggleComplete}
-                onUpdateValueHabit={handleUpdateValue}
-              />
-            )}
-          </>
-        )}
-      </main>
+              {activeTab === 'calendar' && (
+                <CalendarView
+                  habits={habits}
+                  logs={logs}
+                  todayStr={todayStr}
+                  settings={settings}
+                  onToggleCompleteHabit={handleToggleComplete}
+                  onUpdateValueHabit={handleUpdateValue}
+                />
+              )}
+            </>
+          )}
+        </main>
+      </div>
 
       {/* Minimalist Terminal Footer Bar */}
       <footer className="border-t border-term-border bg-black py-2 px-3 sm:px-6 text-[11px] font-mono text-term-text-dim">
