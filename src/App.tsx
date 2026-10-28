@@ -42,6 +42,7 @@ export function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Supabase Auth
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -375,6 +376,7 @@ export function App() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
         settings={settings}
         onUpdateSettings={handleUpdateSettings}
         onOpenSettings={() => setIsSettingsOpen(true)}
@@ -388,6 +390,8 @@ export function App() {
       {/* Layout Wrapper with Sidebar & Main Area */}
       <div className="flex-1 flex max-w-[1700px] w-full mx-auto">
         <Sidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onOpenSettings={() => setIsSettingsOpen(true)}

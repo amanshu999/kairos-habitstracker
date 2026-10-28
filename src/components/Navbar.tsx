@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
+  Menu,
   Sprout,
   Check, 
   Workflow, 
@@ -8,7 +9,8 @@ import {
   Settings as SettingsIcon, 
   HelpCircle, 
   Sun,
-  Moon,
+  Volume2,
+  VolumeX,
   ChevronDown,
   Command,
   Cloud,
@@ -21,6 +23,7 @@ import { playSound } from '../lib/audio';
 interface NavbarProps {
   activeTab: 'dashboard' | 'routines' | 'analytics' | 'calendar';
   setActiveTab: (tab: 'dashboard' | 'routines' | 'analytics' | 'calendar') => void;
+  onToggleSidebar: () => void;
   settings: UserSettings;
   onUpdateSettings: (newSettings: Partial<UserSettings>) => void;
   onOpenSettings: () => void;
@@ -34,6 +37,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
+  onToggleSidebar,
   settings,
   onUpdateSettings,
   onOpenSettings,
@@ -72,22 +76,38 @@ export const Navbar: React.FC<NavbarProps> = ({
   const currentTheme = themes.find(t => t.id === settings.theme) || themes[0];
 
   return (
-    <header className="border-b border-term-border bg-term-bg/95 backdrop-blur sticky top-0 z-40 px-4 sm:px-6 py-2.5 font-mono select-none">
-      <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-4 text-xs">
-        {/* Brand: Sprout icon + kairos + beta */}
-        <div 
-          onClick={() => handleTabClick('dashboard')}
-          className="flex items-center gap-2 cursor-pointer group shrink-0"
-        >
-          <div className="text-term-accent transition-transform group-hover:scale-110">
-            <Sprout size={20} strokeWidth={2.5} />
+    <header className="border-b border-term-border bg-term-bg/95 backdrop-blur sticky top-0 z-40 px-3 sm:px-6 py-2.5 font-mono select-none">
+      <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-3 text-xs">
+        
+        {/* Left: 3-Lines Hamburger Menu + Brand (Sprout icon + kairos + beta) */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          {/* 3 lines button */}
+          <button
+            onClick={() => {
+              playSound.click(settings.sound_effects);
+              onToggleSidebar();
+            }}
+            className="p-1.5 rounded-lg border border-term-border bg-term-surface hover:bg-term-elevated text-term-text-muted hover:text-term-accent transition-colors"
+            title="Toggle Menu (3 lines)"
+          >
+            <Menu size={16} />
+          </button>
+
+          {/* Logo */}
+          <div 
+            onClick={() => handleTabClick('dashboard')}
+            className="flex items-center gap-2 cursor-pointer group"
+          >
+            <div className="text-term-accent transition-transform group-hover:scale-110">
+              <Sprout size={20} strokeWidth={2.5} />
+            </div>
+            <span className="font-bold text-base tracking-tight text-term-text">
+              kairos
+            </span>
+            <span className="text-[10px] text-term-accent font-medium px-2 py-0.5 rounded-full border border-term-accent/30 bg-term-accent/10">
+              beta
+            </span>
           </div>
-          <span className="font-bold text-base tracking-tight text-term-text">
-            kairos
-          </span>
-          <span className="text-[10px] text-term-accent font-medium px-2 py-0.5 rounded-full border border-term-accent/30 bg-term-accent/10">
-            beta
-          </span>
         </div>
 
         {/* Center Pill Navigation */}
@@ -157,12 +177,29 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </nav>
 
-        {/* Right Tools: Time, Sun/Theme, Emerald Dropdown */}
-        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+        {/* Right Tools: Time, Sound Toggle, Sun/Theme, Emerald Dropdown, Cloud */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
           {/* Clock */}
-          <span className="text-term-text-muted text-xs font-mono font-medium">
+          <span className="text-term-text-muted text-xs font-mono font-medium hidden sm:inline">
             {timeStr}
           </span>
+
+          {/* Sound Enable/Disable Toggle Button */}
+          <button
+            onClick={() => {
+              const next = !settings.sound_effects;
+              if (next) playSound.click(true);
+              onUpdateSettings({ sound_effects: next });
+            }}
+            className={`p-1.5 rounded-full border transition-colors ${
+              settings.sound_effects
+                ? 'border-term-accent/40 bg-term-accent/10 text-term-accent'
+                : 'border-term-border bg-term-surface text-term-text-dim hover:text-term-text'
+            }`}
+            title={`Sound FX: ${settings.sound_effects ? 'ENABLED' : 'MUTED'} (Click to toggle)`}
+          >
+            {settings.sound_effects ? <Volume2 size={14} /> : <VolumeX size={14} />}
+          </button>
 
           {/* Sun / Theme icon */}
           <button
@@ -186,7 +223,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="w-2 h-2 rounded-full inline-block" 
                 style={{ backgroundColor: currentTheme.dotColor }} 
               />
-              <span>{currentTheme.label}</span>
+              <span className="hidden sm:inline">{currentTheme.label}</span>
               <ChevronDown size={12} className="text-term-text-dim" />
             </button>
             <div className="absolute right-0 top-full mt-1.5 hidden group-hover:flex flex-col bg-term-surface border border-term-border-strong rounded-xl py-1 w-36 z-50 shadow-2xl animate-slide-down">
@@ -211,7 +248,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Cloud Auth Status Pill */}
           <button
             onClick={onOpenAuth}
-            className={`hidden sm:flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+            className={`hidden md:flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
               isLoggedIn
                 ? 'border-term-accent/50 text-term-accent bg-term-accent/10 font-semibold'
                 : hasCloud
@@ -223,13 +260,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>{isLoggedIn ? 'Synced' : 'Local'}</span>
           </button>
 
-          {/* Mobile Command Palette trigger */}
+          {/* Command Palette */}
           <button
             onClick={onOpenCommandPalette}
-            className="p-1 rounded text-term-text-muted hover:text-term-accent lg:hidden"
-            title="Command Palette"
+            className="p-1.5 rounded-lg border border-term-border bg-term-surface hover:bg-term-elevated text-term-text-muted hover:text-term-accent"
+            title="Command Palette (⌘K or /)"
           >
-            <Command size={14} />
+            <Command size={13} />
           </button>
         </div>
       </div>
