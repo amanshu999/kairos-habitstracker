@@ -193,19 +193,19 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
     }));
   }, [logs]);
 
-  // Heatmap Level Colors
+  // Heatmap Level Colors (calm, eye-friendly tones)
   const getLevelClass = (level: number) => {
     switch (level) {
       case 4:
-        return 'bg-emerald-400 border-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.4)]';
+        return 'bg-[#39d353] border border-[#34c24d]';
       case 3:
-        return 'bg-emerald-600 border-emerald-500';
+        return 'bg-[#26a641] border border-[#22953b]';
       case 2:
-        return 'bg-emerald-800 border-emerald-700';
+        return 'bg-[#006d32] border border-[#005c2a]';
       case 1:
-        return 'bg-emerald-950/80 border-emerald-900';
+        return 'bg-[#0e4429] border border-[#0c3922]';
       default:
-        return 'bg-term-elevated/50 border-term-border/40';
+        return 'bg-[#101b15] border border-[#16251d] hover:border-term-accent/50';
     }
   };
 
@@ -250,13 +250,13 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
             </h2>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-term-text-dim">
+          <div className="flex items-center gap-1.5 text-xs text-term-text-dim select-none">
             <span>Less</span>
-            <span className="w-3 h-3 rounded-sm bg-term-elevated/50 border border-term-border/40 inline-block" />
-            <span className="w-3 h-3 rounded-sm bg-emerald-950/80 border border-emerald-900 inline-block" />
-            <span className="w-3 h-3 rounded-sm bg-emerald-800 border border-emerald-700 inline-block" />
-            <span className="w-3 h-3 rounded-sm bg-emerald-600 border border-emerald-500 inline-block" />
-            <span className="w-3 h-3 rounded-sm bg-emerald-400 border border-emerald-300 inline-block" />
+            <span className="w-3 h-3 rounded-[2px] bg-[#101b15] border border-[#16251d] inline-block" />
+            <span className="w-3 h-3 rounded-[2px] bg-[#0e4429] inline-block" />
+            <span className="w-3 h-3 rounded-[2px] bg-[#006d32] inline-block" />
+            <span className="w-3 h-3 rounded-[2px] bg-[#26a641] inline-block" />
+            <span className="w-3 h-3 rounded-[2px] bg-[#39d353] inline-block" />
             <span>More</span>
           </div>
         </div>

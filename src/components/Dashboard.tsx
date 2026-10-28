@@ -422,19 +422,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
               {/* Grid */}
               <div className="overflow-x-auto pb-1 scrollbar-none flex-1">
-                <div className="grid grid-rows-7 grid-flow-col gap-1.5 min-w-[220px]">
+                <div className="grid grid-rows-7 grid-flow-col gap-[3.5px] min-w-[220px]">
                   {contributionsGrid.map((row) =>
                     row.map((cell) => {
-                      let cellColor = 'bg-term-elevated/40 border-term-border/30';
-                      if (cell.level === 4) cellColor = 'bg-term-accent border-term-accent shadow-[0_0_6px_rgba(34,197,94,0.4)]';
-                      else if (cell.level === 3) cellColor = 'bg-emerald-500 border-emerald-400';
-                      else if (cell.level === 2) cellColor = 'bg-emerald-700 border-emerald-600';
-                      else if (cell.level === 1) cellColor = 'bg-emerald-950 border-emerald-900';
+                      let cellColor = 'bg-[#101b15] border border-[#16251d]';
+                      if (cell.level === 4) cellColor = 'bg-[#39d353] border border-[#34c24d]';
+                      else if (cell.level === 3) cellColor = 'bg-[#26a641] border border-[#22953b]';
+                      else if (cell.level === 2) cellColor = 'bg-[#006d32] border border-[#005c2a]';
+                      else if (cell.level === 1) cellColor = 'bg-[#0e4429] border border-[#0c3922]';
 
                       return (
                         <div
                           key={cell.dateStr}
-                          className={`w-3 h-3 rounded-xs border transition-all ${cellColor}`}
+                          className={`w-[11px] h-[11px] rounded-[2.5px] transition-colors hover:ring-1 hover:ring-term-accent/70 cursor-pointer ${cellColor}`}
                           title={cell.dateStr}
                         />
                       );
@@ -444,14 +444,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-[10px] text-term-text-dim pt-1 border-t border-term-border/40">
+            <div className="flex items-center justify-between text-[10px] text-term-text-dim pt-2 border-t border-term-border/40 select-none">
               <span>Less</span>
               <div className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-xs bg-term-elevated border border-term-border" />
-                <span className="w-2.5 h-2.5 rounded-xs bg-emerald-950 border border-emerald-900" />
-                <span className="w-2.5 h-2.5 rounded-xs bg-emerald-700 border border-emerald-600" />
-                <span className="w-2.5 h-2.5 rounded-xs bg-emerald-500 border border-emerald-400" />
-                <span className="w-2.5 h-2.5 rounded-xs bg-term-accent border border-term-accent" />
+                <span className="w-2.5 h-2.5 rounded-[2px] bg-[#101b15] border border-[#16251d]" />
+                <span className="w-2.5 h-2.5 rounded-[2px] bg-[#0e4429]" />
+                <span className="w-2.5 h-2.5 rounded-[2px] bg-[#006d32]" />
+                <span className="w-2.5 h-2.5 rounded-[2px] bg-[#26a641]" />
+                <span className="w-2.5 h-2.5 rounded-[2px] bg-[#39d353]" />
               </div>
               <span>More</span>
             </div>
