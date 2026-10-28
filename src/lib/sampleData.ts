@@ -2,7 +2,7 @@ import { Habit, HabitLog, Routine, UserSettings } from '../types';
 import { getTodayDateString, parseDateString, formatDateString } from './dateUtils';
 
 export const DEFAULT_SETTINGS: UserSettings = {
-  display_name: 'guest@kernel',
+  display_name: 'user@kairos',
   theme: 'terminal-emerald',
   sound_effects: true,
   crt_effects: false,

@@ -109,7 +109,7 @@ export const TerminalPrompt: React.FC<TerminalPromptProps> = ({
             <span className="w-2.5 h-2.5 rounded-full bg-term-accent/70 inline-block" />
           </div>
           <span className="text-term-text-muted font-mono ml-2 font-medium">
-            bash - init.habits --daemon
+            bash - kairos --daemon
           </span>
         </div>
         <div className="flex items-center gap-3 text-term-text-dim font-mono text-[11px]">

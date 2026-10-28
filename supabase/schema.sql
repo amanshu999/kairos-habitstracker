@@ -1,6 +1,6 @@
 -- ==============================================================================
--- init.habits PostgreSQL Database Schema for Supabase
--- Terminal Habit Tracker - Cloud Persistence & Row-Level Security (RLS)
+-- kairos PostgreSQL Database Schema for Supabase
+-- Terminal Consistency & Habit Engine - Cloud Persistence & Row-Level Security (RLS)
 -- ==============================================================================
 
 -- 1. Profiles Table (linked to Supabase auth.users)

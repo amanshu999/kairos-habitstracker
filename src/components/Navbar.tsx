@@ -75,8 +75,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => handleTabClick('dashboard')}
             className="flex items-center gap-1.5 cursor-pointer select-none text-term-text font-bold"
           >
-            <span className="text-term-accent font-bold">[h]</span>
-            <span>init.<span className="text-term-accent">Habits</span></span>
+            <span className="text-term-accent font-bold">[k]</span>
+            <span>kairos</span>
             <span className="text-[10px] text-term-text-dim px-1 py-0.2 rounded border border-term-border ml-1">
               [beta]
             </span>

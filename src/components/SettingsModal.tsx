@@ -75,7 +75,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     playSound.click(settings.sound_effects);
     const data = await StorageEngine.exportFullData();
     const jsonStr = JSON.stringify(data, null, 2);
-    downloadFile(jsonStr, `init-habits-backup-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
+    downloadFile(jsonStr, `kairos-backup-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
   };
 
   const handleExportCSV = () => {
@@ -466,7 +466,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   IMPORT_JSON_BACKUP
                 </label>
                 <p className="text-term-text-dim text-[11px] mb-2">
-                  Select a previously exported init-habits JSON backup file to restore.
+                  Select a previously exported kairos JSON backup file to restore.
                 </p>
                 <input
                   type="file"

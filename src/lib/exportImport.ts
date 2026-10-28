@@ -37,6 +37,6 @@ export function exportToCSV(habits: Habit[], logs: HabitLog[]): void {
   });
 
   const csvContent = [headers.join(','), ...rows].join('\n');
-  const filename = `init-habits-export-${new Date().toISOString().split('T')[0]}.csv`;
+  const filename = `kairos-export-${new Date().toISOString().split('T')[0]}.csv`;
   downloadFile(csvContent, filename, 'text/csv;charset=utf-8;');
 }

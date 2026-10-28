@@ -544,7 +544,7 @@ export function App() {
           const data = await StorageEngine.exportFullData();
           const jsonStr = JSON.stringify(data, null, 2);
           const { downloadFile } = await import('./lib/exportImport');
-          downloadFile(jsonStr, `init-habits-backup-${todayStr}.json`, 'application/json');
+          downloadFile(jsonStr, `kairos-backup-${todayStr}.json`, 'application/json');
         }}
         onExportCSV={async () => {
           const { exportToCSV } = await import('./lib/exportImport');

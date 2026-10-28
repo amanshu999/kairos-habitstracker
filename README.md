@@ -1,4 +1,4 @@
-# init.habits >_ Terminal-Inspired Habit Tracker
+# kairos >_ Terminal-Inspired Consistency & Habit Engine
 
 [![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
@@ -97,7 +97,7 @@ The optimized bundle is output to `dist/`, ready to deploy to Vercel, Netlify, o
 
 ## ☁️ Supabase Cloud Setup (Optional)
 
-`init.habits` is built local-first and requires **no external setup** to use. If you want multi-device synchronization and cloud backups:
+`kairos` is built local-first and requires **no external setup** to use. If you want multi-device synchronization and cloud backups:
 
 1. Create a free project at [supabase.com](https://supabase.com).
 2. Open the **SQL Editor** in your Supabase dashboard.

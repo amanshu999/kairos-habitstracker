@@ -49,7 +49,7 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({
           <div className="flex items-center gap-2">
             <Keyboard size={16} className="text-term-accent" />
             <h2 className="text-sm font-bold text-term-text">
-              $ man init.habits --keybindings
+              $ man kairos --keybindings
             </h2>
           </div>
           <button
