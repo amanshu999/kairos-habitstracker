@@ -1,0 +1,170 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root,
+[data-theme="terminal-emerald"] {
+  --term-bg: #090a0f;
+  --term-surface: #10131d;
+  --term-elevated: #161b28;
+  --term-hover: #1e2436;
+  --term-border: #21293e;
+  --term-border-strong: #333f5f;
+  --term-text: #e5e7eb;
+  --term-text-muted: #9ca3af;
+  --term-text-dim: #64748b;
+  --term-accent: #10b981;
+  --term-accent-dim: rgba(16, 185, 129, 0.15);
+  --term-accent-glow: rgba(16, 185, 129, 0.4);
+  --term-cyan: #06b6d4;
+  --term-amber: #f59e0b;
+  --term-red: #f43f5e;
+  --term-purple: #a855f7;
+}
+
+[data-theme="matrix-green"] {
+  --term-bg: #040804;
+  --term-surface: #0a130a;
+  --term-elevated: #101f10;
+  --term-hover: #182e18;
+  --term-border: #1a381a;
+  --term-border-strong: #225722;
+  --term-text: #e2fbe2;
+  --term-text-muted: #85c985;
+  --term-text-dim: #457e45;
+  --term-accent: #00ff66;
+  --term-accent-dim: rgba(0, 255, 102, 0.15);
+  --term-accent-glow: rgba(0, 255, 102, 0.45);
+  --term-cyan: #38ef7d;
+  --term-amber: #b8e986;
+  --term-red: #ff4d4d;
+  --term-purple: #11998e;
+}
+
+[data-theme="dracula"] {
+  --term-bg: #181924;
+  --term-surface: #212232;
+  --term-elevated: #282a3e;
+  --term-hover: #32354e;
+  --term-border: #3b3e5b;
+  --term-border-strong: #545882;
+  --term-text: #f8f8f2;
+  --term-text-muted: #bfbfd4;
+  --term-text-dim: #797a9e;
+  --term-accent: #bd93f9;
+  --term-accent-dim: rgba(189, 147, 249, 0.15);
+  --term-accent-glow: rgba(189, 147, 249, 0.4);
+  --term-cyan: #8be9fd;
+  --term-amber: #f1fa8c;
+  --term-red: #ff5555;
+  --term-purple: #ff79c6;
+}
+
+[data-theme="nord"] {
+  --term-bg: #1e222b;
+  --term-surface: #242933;
+  --term-elevated: #2e3440;
+  --term-hover: #3b4252;
+  --term-border: #434c5e;
+  --term-border-strong: #4c566a;
+  --term-text: #eceff4;
+  --term-text-muted: #d8dee9;
+  --term-text-dim: #7e889b;
+  --term-accent: #88c0d0;
+  --term-accent-dim: rgba(136, 192, 208, 0.15);
+  --term-accent-glow: rgba(136, 192, 208, 0.4);
+  --term-cyan: #81a1c1;
+  --term-amber: #ebcb8b;
+  --term-red: #bf616a;
+  --term-purple: #b48ead;
+}
+
+[data-theme="amber-crt"] {
+  --term-bg: #0c0800;
+  --term-surface: #160f00;
+  --term-elevated: #231900;
+  --term-hover: #332400;
+  --term-border: #463200;
+  --term-border-strong: #6d4e00;
+  --term-text: #fff3d1;
+  --term-text-muted: #e6be6a;
+  --term-text-dim: #99752b;
+  --term-accent: #ffb000;
+  --term-accent-dim: rgba(255, 176, 0, 0.16);
+  --term-accent-glow: rgba(255, 176, 0, 0.45);
+  --term-cyan: #ffd166;
+  --term-amber: #ff9f1c;
+  --term-red: #e71d36;
+  --term-purple: #ff70a6;
+}
+
+/* Base resets & typography */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--term-bg);
+  color: var(--term-text);
+  font-feature-settings: "liga" 1, "calt" 1;
+  overflow-x: hidden;
+}
+
+/* Custom terminal scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--term-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--term-border);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--term-border-strong);
+}
+
+/* Focus styles for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--term-accent);
+  outline-offset: 2px;
+}
+
+/* CRT scanlines effect (subtle) */
+.crt-overlay {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.15) 50%
+  );
+  background-size: 100% 3px;
+  pointer-events: none;
+}
+
+/* Terminal badge & card utility styles */
+.terminal-card {
+  background-color: var(--term-surface);
+  border: 1px solid var(--term-border);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.terminal-card:hover {
+  border-color: var(--term-border-strong);
+}
+
+.terminal-pill {
+  font-size: 11px;
+  font-family: inherit;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--term-border);
+  background-color: var(--term-elevated);
+}
+
+.glow-accent {
+  box-shadow: 0 0 16px -2px var(--term-accent-glow);
+}
