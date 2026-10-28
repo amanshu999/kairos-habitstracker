@@ -456,31 +456,38 @@ export function App() {
         )}
       </main>
 
-      {/* Minimalist Terminal Footer */}
-      <footer className="border-t border-term-border bg-term-surface py-3 px-4 sm:px-6 text-[11px] font-mono text-term-text-dim">
+      {/* Minimalist Terminal Footer Bar */}
+      <footer className="border-t border-term-border bg-black py-2 px-3 sm:px-6 text-[11px] font-mono text-term-text-dim">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
-          <div className="flex items-center gap-3">
-            <span>init.habits // terminal consistency engine</span>
-            <span className="hidden sm:inline text-term-border-strong">|</span>
-            <span className="hidden sm:inline text-term-accent">
-              STATUS: LOCAL_FIRST_READY
-            </span>
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+            <span>[ ] enter: keyboard control</span>
+            <span>·</span>
+            <button onClick={() => { setEditingHabit(null); setHabitPrefillTitle(''); setIsHabitModalOpen(true); }} className="hover:text-term-accent">
+              [n] new habit
+            </button>
+            <span>·</span>
+            <button onClick={() => setActiveTab('routines')} className="hover:text-term-accent">
+              [r] routines
+            </button>
+            <span>·</span>
+            <span>[0-3] views</span>
+            <span>·</span>
+            <button onClick={() => setIsShortcutsOpen(true)} className="hover:text-term-accent">
+              [?] help
+            </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsShortcutsOpen(true)}
-              className="hover:text-term-accent transition-colors"
-            >
-              [?] Keyboard Shortcuts
-            </button>
-            <span className="text-term-border-strong">|</span>
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setIsCommandPaletteOpen(true)}
               className="hover:text-term-accent transition-colors"
             >
-              [⌘K] Command Palette
+              [⌘K] commands
             </button>
+            <span>·</span>
+            <span className="text-term-accent text-[10px]">
+              // local-first ready
+            </span>
           </div>
         </div>
       </footer>
