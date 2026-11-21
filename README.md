@@ -44,10 +44,10 @@ A keyboard-centric habit tracker featuring a terminal-style interface, local-fir
 
 ```bash
 # Clone the repository
-git clone https://github.com/amanshu999/habits.git
+git clone https://github.com/amanshu999/kairos-habitstracker.git
 
 # Navigate into the project directory
-cd habits
+cd kairos-habitstracker
 
 # Install dependencies
 npm install
