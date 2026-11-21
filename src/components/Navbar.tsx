@@ -100,11 +100,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Logo */}
           <div 
             onClick={() => handleTabClick('dashboard')}
-            className="flex items-center gap-2 cursor-pointer group"
+            className="flex items-center gap-2.5 cursor-pointer group"
           >
-            <div className="text-term-accent transition-transform group-hover:scale-110">
-              <Sprout size={20} strokeWidth={2.5} />
-            </div>
+            <img 
+              src="./kairos-logo.png" 
+              alt="Kairos" 
+              className="w-6 h-6 rounded-md object-cover ring-1 ring-term-accent/40 shadow-sm transition-transform group-hover:scale-105" 
+            />
             <span className="font-bold text-base tracking-tight text-term-text">
               kairos
             </span>

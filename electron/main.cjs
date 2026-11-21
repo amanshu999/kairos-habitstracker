@@ -14,7 +14,7 @@ function createWindow() {
     backgroundColor: '#090a0f',
     autoHideMenuBar: true,
     show: false,
-    icon: path.join(__dirname, '../public/favicon.svg'),
+    icon: path.join(__dirname, '../public/kairos-logo.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       nodeIntegration: false,

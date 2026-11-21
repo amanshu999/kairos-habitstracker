@@ -107,21 +107,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        {/* Bottom Quote & Author Card */}
-        <div className="p-3.5 rounded-xl bg-term-elevated/70 border border-term-border text-term-text-muted space-y-1.5">
-          <p className="text-[11px] italic text-term-text leading-relaxed">
-            &ldquo;Small habits build a better you.&rdquo;
-          </p>
-          <div className="flex items-center justify-between pt-1 border-t border-term-border/40 text-[10px]">
-            <a
-              href="https://github.com/amanshu999"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-term-text-muted hover:text-term-accent transition-colors"
-            >
-              made by <span className="text-term-accent font-medium">amanshu</span>
-            </a>
-            <Sprout size={13} className="text-term-accent opacity-80" />
+        {/* Bottom Hero Card & Author */}
+        <div className="rounded-xl border border-term-border overflow-hidden bg-term-elevated/70">
+          <div className="relative h-20 overflow-hidden">
+            <img 
+              src="./kairos-hero.png" 
+              alt="Terminal Environment" 
+              className="w-full h-full object-cover opacity-75 hover:opacity-100 transition-opacity duration-300" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent p-2 flex flex-col justify-end">
+              <span className="text-[9px] text-term-accent font-semibold tracking-wider">// FOCUS_RUNTIME</span>
+            </div>
+          </div>
+          <div className="p-3 space-y-1.5">
+            <p className="text-[11px] italic text-term-text leading-relaxed">
+              &ldquo;Small habits build a better you.&rdquo;
+            </p>
+            <div className="flex items-center justify-between pt-1 border-t border-term-border/40 text-[10px]">
+              <a
+                href="https://github.com/amanshu999"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-term-text-muted hover:text-term-accent transition-colors"
+              >
+                made by <span className="text-term-accent font-medium">amanshu</span>
+              </a>
+              <span className="text-term-accent text-[11px] font-mono">&gt;_</span>
+            </div>
           </div>
         </div>
       </aside>

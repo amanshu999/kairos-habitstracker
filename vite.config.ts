@@ -10,7 +10,7 @@ export default defineConfig({
     VitePWA({
       injectRegister: null,
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'terminal.svg'],
+      includeAssets: ['favicon.svg', 'terminal.svg', 'kairos-logo.png', 'kairos-hero.png'],
       manifest: {
         name: 'Kairos - Terminal Habit Tracker',
         short_name: 'Kairos',
@@ -21,14 +21,14 @@ export default defineConfig({
         orientation: 'portrait-primary',
         icons: [
           {
-            src: '/favicon.svg',
-            sizes: '192x192',
-            type: 'image/svg+xml',
+            src: './kairos-logo.png',
+            sizes: '512x512',
+            type: 'image/png',
             purpose: 'any maskable',
           },
           {
-            src: '/terminal.svg',
-            sizes: '512x512',
+            src: './favicon.svg',
+            sizes: '192x192',
             type: 'image/svg+xml',
             purpose: 'any maskable',
           },
