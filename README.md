@@ -1,18 +1,21 @@
 # Kairos - Terminal Habit Tracker
 
-A keyboard-centric habit tracker featuring a terminal-style interface, local-first storage, and optional cloud synchronization.
+A keyboard-centric habit tracker featuring a terminal-style interface, local-first storage, optional cloud synchronization, and native desktop app support.
+
+---
 
 ## Features
 
-- **Local-First Persistence**: Data is stored locally in the browser using IndexedDB. No account required to get started.
+- **Local-First Persistence**: Data is stored locally using IndexedDB with zero mandatory cloud dependencies.
 - **Optional Cloud Sync**: Connect to Supabase for multi-device data backup with row-level security.
+- **Desktop Application**: Run natively on Windows, macOS, or Linux powered by Electron.
+- **Progressive Web App (PWA)**: Installable directly from the browser on mobile and desktop.
 - **Multiple Habit Types**:
   - Binary checkboxes for daily check-ins
   - Numeric counters for quantity targets
   - Integrated focus timer for time-based habits
 - **Keyboard Navigation**: Global command palette and hotkeys for rapid navigation.
 - **Visual Analytics**: Activity heatmap, completion trends, and consistency metrics.
-- **Customizable Themes**: Multiple color themes with retro CRT scanline options and optional synthesized audio cues.
 - **Data Portability**: Full JSON backup and restore, plus CSV export.
 
 ---
@@ -20,11 +23,13 @@ A keyboard-centric habit tracker featuring a terminal-style interface, local-fir
 ## Tech Stack
 
 - **Frontend**: React 19, TypeScript, Vite
+- **Desktop Runtime**: Electron
 - **Styling**: Tailwind CSS
 - **Database (Local)**: IndexedDB (`idb`)
 - **Database (Cloud)**: Supabase (PostgreSQL)
 - **Charts**: Recharts
 - **Icons**: Lucide React
+- **Testing**: Vitest
 
 ---
 
@@ -39,7 +44,7 @@ A keyboard-centric habit tracker featuring a terminal-style interface, local-fir
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/<your-repo-name>.git
+git clone https://github.com/amanshusharma999/habits.git
 
 # Navigate into the project directory
 cd habits
@@ -48,7 +53,7 @@ cd habits
 npm install
 ```
 
-### Development Server
+### Web Development Server
 
 ```bash
 npm run dev
@@ -56,13 +61,25 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### Production Build
+### Desktop App (Electron)
 
 ```bash
-npm run build
+# Run desktop app in development
+npm run electron:dev
+
+# Package desktop installer for Windows (.exe)
+npm run electron:build
 ```
 
-The compiled output will be generated inside the `dist/` directory.
+### Production Web Build & Tests
+
+```bash
+# Run unit tests
+npm test
+
+# Build optimized web bundle
+npm run build
+```
 
 ---
 
@@ -98,6 +115,12 @@ To enable cloud synchronization with Supabase:
    VITE_SUPABASE_ANON_KEY=your-anon-key-here
    ```
 3. Run the schema migrations from `supabase/schema.sql` in your Supabase SQL editor.
+
+---
+
+## Author
+
+Crafted with dedication by **[Amanshu Sharma](https://github.com/amanshusharma999)**.
 
 ---
 

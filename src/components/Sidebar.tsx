@@ -107,16 +107,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        {/* Bottom Quote Card */}
-        <div className="p-3.5 rounded-xl bg-term-elevated/70 border border-term-border text-term-text-muted space-y-1">
-          <div className="text-xl font-serif text-term-accent leading-none">
-            &ldquo;
-          </div>
+        {/* Bottom Quote & Author Card */}
+        <div className="p-3.5 rounded-xl bg-term-elevated/70 border border-term-border text-term-text-muted space-y-1.5">
           <p className="text-[11px] italic text-term-text leading-relaxed">
-            Small habits build a better you.
+            &ldquo;Small habits build a better you.&rdquo;
           </p>
-          <div className="flex justify-end pt-1">
-            <Sprout size={14} className="text-term-accent opacity-80" />
+          <div className="flex items-center justify-between pt-1 border-t border-term-border/40 text-[10px]">
+            <a
+              href="https://github.com/amanshusharma999"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-term-text-muted hover:text-term-accent transition-colors"
+            >
+              made by <span className="text-term-accent font-medium">amanshu</span>
+            </a>
+            <Sprout size={13} className="text-term-accent opacity-80" />
           </div>
         </div>
       </aside>

@@ -1,7 +1,13 @@
 {
   "name": "kairos",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Terminal consistency and habit engine for desktop and web",
+  "main": "electron/main.cjs",
+  "author": {
+    "name": "Amanshu Sharma",
+    "url": "https://github.com/amanshusharma999"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +15,32 @@
     "lint": "oxlint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:dev": "concurrently -k \"cross-env BROWSER=none vite\" \"wait-on tcp:5173 && electron .\"",
+    "electron:build": "tsc -b && vite build && electron-builder",
+    "electron:pack": "tsc -b && vite build && electron-builder --dir"
+  },
+  "build": {
+    "appId": "com.amanshu.kairos",
+    "productName": "Kairos",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
@@ -29,12 +60,17 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "autoprefixer": "^10.6.2",
+    "concurrently": "^10.0.7",
+    "cross-env": "^10.1.0",
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0",
     "oxlint": "^1.89.0",
     "postcss": "^8.5.32",
     "tailwindcss": "^3.4.19",
     "typescript": "~7.0.2",
     "vite": "^8.3.5",
     "vite-plugin-pwa": "^2.0.0",
-    "vitest": "^5.1.1"
+    "vitest": "^5.1.1",
+    "wait-on": "^9.5.1"
   }
 }

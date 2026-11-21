@@ -158,3 +158,4 @@ describe('calculateHabitStreak', () => {
     expect(result.currentStreak).toBe(2);
   });
 });
+

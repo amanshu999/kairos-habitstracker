@@ -512,6 +512,15 @@ export function App() {
           </div>
 
           <div className="flex items-center gap-2">
+            <a
+              href="https://github.com/amanshusharma999"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-term-text-muted hover:text-term-accent transition-colors flex items-center gap-1"
+            >
+              <span>made by <span className="text-term-accent font-medium underline underline-offset-2">amanshu</span></span>
+            </a>
+            <span>·</span>
             <button
               onClick={() => setIsCommandPaletteOpen(true)}
               className="hover:text-term-accent transition-colors"
