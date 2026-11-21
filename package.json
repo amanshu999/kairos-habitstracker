@@ -6,7 +6,7 @@
   "main": "electron/main.cjs",
   "author": {
     "name": "Amanshu Sharma",
-    "url": "https://github.com/amanshusharma999"
+    "url": "https://github.com/amanshu999"
   },
   "type": "module",
   "scripts": {

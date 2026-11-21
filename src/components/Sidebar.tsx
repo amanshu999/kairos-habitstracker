@@ -114,7 +114,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </p>
           <div className="flex items-center justify-between pt-1 border-t border-term-border/40 text-[10px]">
             <a
-              href="https://github.com/amanshusharma999"
+              href="https://github.com/amanshu999"
               target="_blank"
               rel="noopener noreferrer"
               className="text-term-text-muted hover:text-term-accent transition-colors"

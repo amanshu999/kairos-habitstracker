@@ -513,7 +513,7 @@ export function App() {
 
           <div className="flex items-center gap-2">
             <a
-              href="https://github.com/amanshusharma999"
+              href="https://github.com/amanshu999"
               target="_blank"
               rel="noopener noreferrer"
               className="text-term-text-muted hover:text-term-accent transition-colors flex items-center gap-1"
