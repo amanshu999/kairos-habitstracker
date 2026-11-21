@@ -10,7 +10,7 @@ export default defineConfig({
     VitePWA({
       injectRegister: null,
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'terminal.svg', 'icons.svg'],
+      includeAssets: ['favicon.svg', 'terminal.svg'],
       manifest: {
         name: 'Kairos - Terminal Habit Tracker',
         short_name: 'Kairos',
