@@ -1,5 +1,6 @@
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 let mainWindow = null;
 
@@ -18,21 +19,35 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.cjs'),
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: true,
+      sandbox: false,
     },
   });
 
-  const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+  const distHtmlPath = path.join(__dirname, '../dist/index.html');
+  const hasDist = fs.existsSync(distHtmlPath);
+  const isDevServer = process.env.VITE_DEV_SERVER_URL || (process.env.NODE_ENV === 'development' && !hasDist);
 
-  if (isDev) {
+  if (isDevServer) {
     const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
     mainWindow.loadURL(devServerUrl);
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    mainWindow.loadFile(distHtmlPath);
   }
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+  });
+
+  // Enable F12 and Ctrl+Shift+I to toggle DevTools
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.key === 'F12' || (input.control && input.shift && (input.key === 'I' || input.key === 'i'))) {
+      mainWindow.webContents.toggleDevTools();
+      event.preventDefault();
+    }
+  });
+
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    console.error('Failed to load:', errorCode, errorDescription, validatedURL);
   });
 
   // Open all target="_blank" links in default external browser
@@ -63,4 +78,3 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-
