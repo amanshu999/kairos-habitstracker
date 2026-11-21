@@ -1,22 +1,32 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Habit, HabitLog, Routine, UserSettings, StreakInfo, ThemeType } from './types';
+import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from 'react';
+import { Habit, HabitLog, Routine, UserSettings, StreakInfo, ThemeType, SyncState } from './types';
 import { StorageEngine } from './lib/storage';
 import { calculateHabitStreak } from './lib/streaks';
 import { getTodayDateString } from './lib/dateUtils';
 import { getCurrentUser, getSupabaseClient } from './lib/supabase';
 import { playSound } from './lib/audio';
+import { SyncEngine } from './lib/syncEngine';
 
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
-import { RoutinesView } from './components/RoutinesView';
-import { AnalyticsView } from './components/AnalyticsView';
-import { CalendarView } from './components/CalendarView';
-import { HabitModal } from './components/HabitModal';
-import { SettingsModal } from './components/SettingsModal';
-import { AuthModal } from './components/AuthModal';
-import { CommandPalette } from './components/CommandPalette';
-import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
+
+// Lazy-loaded code-split views & dialogs for bundle optimization
+const RoutinesView = lazy(() => import('./components/RoutinesView').then(m => ({ default: m.RoutinesView })));
+const AnalyticsView = lazy(() => import('./components/AnalyticsView').then(m => ({ default: m.AnalyticsView })));
+const CalendarView = lazy(() => import('./components/CalendarView').then(m => ({ default: m.CalendarView })));
+const HabitModal = lazy(() => import('./components/HabitModal').then(m => ({ default: m.HabitModal })));
+const SettingsModal = lazy(() => import('./components/SettingsModal').then(m => ({ default: m.SettingsModal })));
+const AuthModal = lazy(() => import('./components/AuthModal').then(m => ({ default: m.AuthModal })));
+const CommandPalette = lazy(() => import('./components/CommandPalette').then(m => ({ default: m.CommandPalette })));
+const KeyboardShortcutsModal = lazy(() => import('./components/KeyboardShortcutsModal').then(m => ({ default: m.KeyboardShortcutsModal })));
+
+const TerminalLoader = () => (
+  <div className="py-24 text-center space-y-3 font-mono">
+    <div className="inline-block w-6 h-6 border-2 border-term-accent border-t-transparent rounded-full animate-spin" />
+    <div className="text-xs text-term-text-muted">$ loading module...</div>
+  </div>
+);
 
 export function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'routines' | 'analytics' | 'calendar'>('dashboard');
@@ -34,6 +44,10 @@ export function App() {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  // Sync state
+  const [syncState, setSyncState] = useState<SyncState>('idle');
+  const [pendingSyncCount, setPendingSyncCount] = useState<number>(0);
+
   // Modals
   const [isHabitModalOpen, setIsHabitModalOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
@@ -49,6 +63,15 @@ export function App() {
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
 
   const todayStr = useMemo(() => getTodayDateString(), []);
+
+  // Subscribe to SyncEngine events
+  useEffect(() => {
+    const unsubscribe = SyncEngine.subscribe((state, count) => {
+      setSyncState(state);
+      setPendingSyncCount(count);
+    });
+    return unsubscribe;
+  }, []);
 
   // Load all data from IndexedDB
   const loadData = useCallback(async () => {
@@ -76,13 +99,21 @@ export function App() {
     loadData();
   }, [loadData]);
 
-  // Check Supabase session
+  // Check Supabase session and perform two-way sync on boot
   useEffect(() => {
     const checkAuth = async () => {
       const user = await getCurrentUser();
       if (user) {
         setIsLoggedIn(true);
         setUserEmail(user.email);
+
+        // Pull remote records and reconcile with local IndexedDB
+        const merged = await SyncEngine.pullRemoteData();
+        if (merged) {
+          setHabits(merged.habits);
+          setLogs(merged.logs);
+          setRoutines(merged.routines);
+        }
       }
     };
     checkAuth();
@@ -128,22 +159,8 @@ export function App() {
       return [...filtered, updatedLog];
     });
 
-    // Cloud sync if authenticated
-    const client = getSupabaseClient();
-    if (client && isLoggedIn) {
-      try {
-        await client.from('habit_logs').upsert({
-          id: updatedLog.id,
-          habit_id: updatedLog.habit_id,
-          date: updatedLog.date,
-          completed: updatedLog.completed,
-          value: updatedLog.value,
-          updated_at: updatedLog.updated_at,
-        });
-      } catch (err) {
-        console.warn('Cloud sync error for log:', err);
-      }
-    }
+    // Enqueue for cloud sync with offline queue fallback
+    await SyncEngine.enqueue('habit_logs', 'upsert', updatedLog);
   };
 
   const handleUpdateValue = async (habitId: string, newValue: number, targetDate?: string) => {
@@ -170,21 +187,7 @@ export function App() {
       return [...filtered, updatedLog];
     });
 
-    const client = getSupabaseClient();
-    if (client && isLoggedIn) {
-      try {
-        await client.from('habit_logs').upsert({
-          id: updatedLog.id,
-          habit_id: updatedLog.habit_id,
-          date: updatedLog.date,
-          completed: updatedLog.completed,
-          value: updatedLog.value,
-          updated_at: updatedLog.updated_at,
-        });
-      } catch (err) {
-        console.warn('Cloud sync error:', err);
-      }
-    }
+    await SyncEngine.enqueue('habit_logs', 'upsert', updatedLog);
   };
 
   const handleSaveHabit = async (habitData: Partial<Habit>) => {
@@ -214,14 +217,7 @@ export function App() {
       return [...prev, newHabit];
     });
 
-    const client = getSupabaseClient();
-    if (client && isLoggedIn) {
-      try {
-        await client.from('habits').upsert(newHabit);
-      } catch (e) {
-        console.warn('Cloud sync error for habit:', e);
-      }
-    }
+    await SyncEngine.enqueue('habits', 'upsert', newHabit);
   };
 
   const handleArchiveHabit = async (habitId: string) => {
@@ -231,6 +227,7 @@ export function App() {
     await StorageEngine.saveHabit(updated);
     playSound.click(settings.sound_effects);
     setHabits(prev => prev.map(h => (h.id === habitId ? updated : h)));
+    await SyncEngine.enqueue('habits', 'upsert', updated);
   };
 
   const handleDeleteHabit = async (habitId: string) => {
@@ -238,6 +235,7 @@ export function App() {
     playSound.undo(settings.sound_effects);
     setHabits(prev => prev.filter(h => h.id !== habitId));
     setLogs(prev => prev.filter(l => l.habit_id !== habitId));
+    await SyncEngine.enqueue('habits', 'delete', { id: habitId });
   };
 
   // Routine Actions
@@ -253,25 +251,38 @@ export function App() {
       }
       return [...prev, routine];
     });
+    await SyncEngine.enqueue('routines', 'upsert', routine);
   };
 
   const handleDeleteRoutine = async (routineId: string) => {
     await StorageEngine.deleteRoutine(routineId);
     playSound.undo(settings.sound_effects);
     setRoutines(prev => prev.filter(r => r.id !== routineId));
+    await SyncEngine.enqueue('routines', 'delete', { id: routineId });
   };
 
   // Settings Actions
-  const handleUpdateSettings = async (newSettings: Partial<UserSettings>) => {
-    const updated = { ...settings, ...newSettings };
-    setSettings(updated);
-    await StorageEngine.saveSettings(updated);
-  };
+  const handleUpdateSettings = useCallback(async (newSettings: Partial<UserSettings>) => {
+    setSettings(prev => {
+      const updated = { ...prev, ...newSettings };
+      StorageEngine.saveSettings(updated);
+      return updated;
+    });
+  }, []);
 
   // Auth Handlers
-  const handleAuthSuccess = (email: string) => {
+  const handleAuthSuccess = async (email: string) => {
     setIsLoggedIn(true);
     setUserEmail(email);
+
+    // Flush offline queue and pull merged data
+    await SyncEngine.flush();
+    const merged = await SyncEngine.pullRemoteData();
+    if (merged) {
+      setHabits(merged.habits);
+      setLogs(merged.logs);
+      setRoutines(merged.routines);
+    }
   };
 
   const handleSignOut = async () => {
@@ -299,20 +310,19 @@ export function App() {
         setIsCommandPaletteOpen(prev => !prev);
         return;
       }
-      if (e.key === '/' && !isCommandPaletteOpen && !isHabitModalOpen) {
+
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         setIsCommandPaletteOpen(true);
         return;
       }
 
-      // Shortcuts Modal (?)
-      if (e.key === '?' && !isShortcutsOpen) {
-        e.preventDefault();
-        setIsShortcutsOpen(true);
+      // If modal is open, don't trigger tab switching
+      if (isCommandPaletteOpen || isShortcutsOpen || isHabitModalOpen || isSettingsOpen) {
         return;
       }
 
-      // Quick Nav Tabs
+      // View tabs
       if (e.key === '0' || e.key === 'd' || e.key === 'D') {
         setActiveTab('dashboard');
         playSound.click(settings.sound_effects);
@@ -327,16 +337,23 @@ export function App() {
         playSound.click(settings.sound_effects);
       }
 
-      // New Habit modal
-      if ((e.key === 'n' || e.key === 'N') && !isHabitModalOpen) {
+      // Quick add
+      if (e.key === 'n' || e.key === 'N') {
         e.preventDefault();
         setEditingHabit(null);
         setHabitPrefillTitle('');
         setIsHabitModalOpen(true);
+        playSound.click(settings.sound_effects);
       }
 
-      // Settings modal
-      if ((e.key === 's' || e.key === 'S') && !isSettingsOpen) {
+      // Help
+      if (e.key === '?') {
+        e.preventDefault();
+        setIsShortcutsOpen(true);
+      }
+
+      // Settings
+      if (e.key === 's' || e.key === 'S') {
         e.preventDefault();
         setIsSettingsOpen(true);
       }
@@ -363,16 +380,12 @@ export function App() {
     isSettingsOpen,
     settings.sound_effects,
     settings.crt_effects,
+    handleUpdateSettings,
   ]);
 
   return (
-    <div className="min-h-screen bg-term-bg text-term-text flex flex-col font-mono selection:bg-term-accent selection:text-black relative">
-      {/* Optional CRT Scanlines Effect Overlay */}
-      {settings.crt_effects && (
-        <div className="fixed inset-0 crt-overlay z-50 pointer-events-none opacity-40" />
-      )}
-
-      {/* Top Terminal Navigation Bar */}
+    <div className={`min-h-screen flex flex-col bg-term-bg text-term-text transition-colors duration-200 ${settings.crt_effects ? 'crt-scanlines' : ''}`}>
+      {/* Top Navigation */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -385,15 +398,21 @@ export function App() {
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         isLoggedIn={isLoggedIn}
         userEmail={userEmail}
+        syncState={syncState}
+        pendingSyncCount={pendingSyncCount}
       />
 
-      {/* Layout Wrapper with Sidebar & Main Area */}
-      <div className="flex-1 flex max-w-[1700px] w-full mx-auto">
+      {/* Main Workspace Layout */}
+      <div className="flex-1 flex max-w-7xl w-full mx-auto relative overflow-hidden">
+        {/* Responsive Collapsible Sidebar */}
         <Sidebar
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={(tab) => {
+            setActiveTab(tab);
+            playSound.click(settings.sound_effects);
+          }}
           onOpenSettings={() => setIsSettingsOpen(true)}
           onOpenShortcuts={() => setIsShortcutsOpen(true)}
           soundEnabled={settings.sound_effects}
@@ -408,7 +427,7 @@ export function App() {
               </div>
             </div>
           ) : (
-            <>
+            <Suspense fallback={<TerminalLoader />}>
               {activeTab === 'dashboard' && (
                 <Dashboard
                   habits={habits}
@@ -466,7 +485,7 @@ export function App() {
                   onUpdateValueHabit={handleUpdateValue}
                 />
               )}
-            </>
+            </Suspense>
           )}
         </main>
       </div>
@@ -501,76 +520,78 @@ export function App() {
             </button>
             <span>·</span>
             <span className="text-term-accent text-[10px]">
-              // local-first ready
+              {syncState === 'syncing' ? '// sync: processing...' : (pendingSyncCount > 0 ? `// sync: ${pendingSyncCount} queued` : '// local-first ready')}
             </span>
           </div>
         </div>
       </footer>
 
-      {/* Modals & Dialogs */}
-      <HabitModal
-        isOpen={isHabitModalOpen}
-        onClose={() => {
-          setIsHabitModalOpen(false);
-          setEditingHabit(null);
-          setHabitPrefillTitle('');
-        }}
-        onSave={handleSaveHabit}
-        editingHabit={editingHabit}
-        initialTitle={habitPrefillTitle}
-      />
+      {/* Code-split Modals & Dialogs */}
+      <Suspense fallback={null}>
+        <HabitModal
+          isOpen={isHabitModalOpen}
+          onClose={() => {
+            setIsHabitModalOpen(false);
+            setEditingHabit(null);
+            setHabitPrefillTitle('');
+          }}
+          onSave={handleSaveHabit}
+          editingHabit={editingHabit}
+          initialTitle={habitPrefillTitle}
+        />
 
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        settings={settings}
-        onUpdateSettings={handleUpdateSettings}
-        habits={habits}
-        logs={logs}
-        routines={routines}
-        onReloadAllData={loadData}
-      />
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          settings={settings}
+          onUpdateSettings={handleUpdateSettings}
+          habits={habits}
+          logs={logs}
+          routines={routines}
+          onReloadAllData={loadData}
+        />
 
-      <AuthModal
-        isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
-        isLoggedIn={isLoggedIn}
-        userEmail={userEmail}
-        onAuthSuccess={handleAuthSuccess}
-        onSignOut={handleSignOut}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        soundEnabled={settings.sound_effects}
-      />
+        <AuthModal
+          isOpen={isAuthOpen}
+          onClose={() => setIsAuthOpen(false)}
+          isLoggedIn={isLoggedIn}
+          userEmail={userEmail}
+          onAuthSuccess={handleAuthSuccess}
+          onSignOut={handleSignOut}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          soundEnabled={settings.sound_effects}
+        />
 
-      <CommandPalette
-        isOpen={isCommandPaletteOpen}
-        onClose={() => setIsCommandPaletteOpen(false)}
-        onSelectTab={setActiveTab}
-        onOpenNewHabit={() => {
-          setEditingHabit(null);
-          setHabitPrefillTitle('');
-          setIsHabitModalOpen(true);
-        }}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        onToggleSound={() => handleUpdateSettings({ sound_effects: !settings.sound_effects })}
-        onToggleCRT={() => handleUpdateSettings({ crt_effects: !settings.crt_effects })}
-        onSetTheme={(theme) => handleUpdateSettings({ theme })}
-        onExportJSON={async () => {
-          const data = await StorageEngine.exportFullData();
-          const jsonStr = JSON.stringify(data, null, 2);
-          const { downloadFile } = await import('./lib/exportImport');
-          downloadFile(jsonStr, `kairos-backup-${todayStr}.json`, 'application/json');
-        }}
-        onExportCSV={async () => {
-          const { exportToCSV } = await import('./lib/exportImport');
-          exportToCSV(habits, logs);
-        }}
-      />
+        <CommandPalette
+          isOpen={isCommandPaletteOpen}
+          onClose={() => setIsCommandPaletteOpen(false)}
+          onSelectTab={setActiveTab}
+          onOpenNewHabit={() => {
+            setEditingHabit(null);
+            setHabitPrefillTitle('');
+            setIsHabitModalOpen(true);
+          }}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onToggleSound={() => handleUpdateSettings({ sound_effects: !settings.sound_effects })}
+          onToggleCRT={() => handleUpdateSettings({ crt_effects: !settings.crt_effects })}
+          onSetTheme={(theme) => handleUpdateSettings({ theme })}
+          onExportJSON={async () => {
+            const data = await StorageEngine.exportFullData();
+            const jsonStr = JSON.stringify(data, null, 2);
+            const { downloadFile } = await import('./lib/exportImport');
+            downloadFile(jsonStr, `kairos-backup-${todayStr}.json`, 'application/json');
+          }}
+          onExportCSV={async () => {
+            const { exportToCSV } = await import('./lib/exportImport');
+            exportToCSV(habits, logs);
+          }}
+        />
 
-      <KeyboardShortcutsModal
-        isOpen={isShortcutsOpen}
-        onClose={() => setIsShortcutsOpen(false)}
-      />
+        <KeyboardShortcutsModal
+          isOpen={isShortcutsOpen}
+          onClose={() => setIsShortcutsOpen(false)}
+        />
+      </Suspense>
     </div>
   );
 }

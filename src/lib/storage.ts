@@ -1,9 +1,9 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import { Habit, HabitLog, Routine, UserSettings } from '../types';
+import { Habit, HabitLog, Routine, UserSettings, SyncQueueItem } from '../types';
 import { DEFAULT_SETTINGS, INITIAL_HABITS, INITIAL_ROUTINES, generateInitialLogs } from './sampleData';
 
 const DB_NAME = 'init_habits_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 interface HabitDB extends DBSchema {
   habits: {
@@ -23,6 +23,11 @@ interface HabitDB extends DBSchema {
   settings: {
     key: string;
     value: UserSettings;
+  };
+  sync_queue: {
+    key: string;
+    value: SyncQueueItem;
+    indexes: { 'by-timestamp': number };
   };
 }
 
@@ -51,6 +56,11 @@ async function getDB(): Promise<IDBPDatabase<HabitDB>> {
         // Settings store
         if (!db.objectStoreNames.contains('settings')) {
           db.createObjectStore('settings');
+        }
+        // Sync queue store
+        if (!db.objectStoreNames.contains('sync_queue')) {
+          const queueStore = db.createObjectStore('sync_queue', { keyPath: 'id' });
+          queueStore.createIndex('by-timestamp', 'timestamp');
         }
       },
     });
@@ -250,5 +260,27 @@ export const StorageEngine = {
       await tx.objectStore('settings').put(data.settings, 'user_settings');
     }
     await tx.done;
+  },
+
+  // Sync Queue
+  async addToSyncQueue(item: SyncQueueItem): Promise<void> {
+    const db = await getDB();
+    await db.put('sync_queue', item);
+  },
+
+  async getSyncQueue(): Promise<SyncQueueItem[]> {
+    const db = await getDB();
+    const items = await db.getAll('sync_queue');
+    return items.sort((a, b) => a.timestamp - b.timestamp);
+  },
+
+  async removeSyncQueueItem(id: string): Promise<void> {
+    const db = await getDB();
+    await db.delete('sync_queue', id);
+  },
+
+  async clearSyncQueue(): Promise<void> {
+    const db = await getDB();
+    await db.clear('sync_queue');
   },
 };

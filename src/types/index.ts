@@ -68,3 +68,16 @@ export interface DayAnalytics {
   percentage: number;
   level: 0 | 1 | 2 | 3 | 4; // for github-style heatmap
 }
+
+export type SyncAction = 'upsert' | 'delete';
+export type SyncTable = 'habits' | 'habit_logs' | 'routines' | 'profiles';
+
+export interface SyncQueueItem {
+  id: string;
+  table: SyncTable;
+  action: SyncAction;
+  data: any;
+  timestamp: number;
+}
+
+export type SyncState = 'idle' | 'syncing' | 'synced' | 'offline' | 'error';

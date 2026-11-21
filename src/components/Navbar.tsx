@@ -16,7 +16,7 @@ import {
   Cloud,
   CloudOff
 } from 'lucide-react';
-import { ThemeType, UserSettings } from '../types';
+import { ThemeType, UserSettings, SyncState } from '../types';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { playSound } from '../lib/audio';
 
@@ -32,6 +32,8 @@ interface NavbarProps {
   onOpenCommandPalette: () => void;
   isLoggedIn: boolean;
   userEmail?: string;
+  syncState?: SyncState;
+  pendingSyncCount?: number;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -46,6 +48,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCommandPalette,
   isLoggedIn,
   userEmail,
+  syncState = 'idle',
+  pendingSyncCount = 0,
 }) => {
   const [timeStr, setTimeStr] = useState<string>('');
 
@@ -249,15 +253,27 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onOpenAuth}
             className={`hidden md:flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
-              isLoggedIn
+              syncState === 'syncing'
+                ? 'border-term-cyan/60 text-term-cyan bg-term-cyan/10 animate-pulse'
+                : (pendingSyncCount && pendingSyncCount > 0)
+                ? 'border-term-amber/60 text-term-amber bg-term-amber/10'
+                : isLoggedIn
                 ? 'border-term-accent/50 text-term-accent bg-term-accent/10 font-semibold'
                 : hasCloud
                 ? 'border-term-cyan/40 text-term-cyan bg-term-cyan/5'
                 : 'border-term-border text-term-text-dim hover:text-term-text'
             }`}
           >
-            {isLoggedIn ? <Cloud size={12} /> : <CloudOff size={12} />}
-            <span>{isLoggedIn ? 'Synced' : 'Local'}</span>
+            {isLoggedIn ? <Cloud size={12} className={syncState === 'syncing' ? 'animate-spin' : ''} /> : <CloudOff size={12} />}
+            <span>
+              {syncState === 'syncing'
+                ? 'Syncing...'
+                : (pendingSyncCount && pendingSyncCount > 0)
+                ? `${pendingSyncCount} Queued`
+                : isLoggedIn
+                ? 'Synced'
+                : 'Local'}
+            </span>
           </button>
 
           {/* Command Palette */}
